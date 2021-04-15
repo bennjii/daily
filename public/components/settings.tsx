@@ -3,6 +3,7 @@ import styles from '../../styles/Home.module.css'
 
 export default function Settings(props) {
     const documentSettings = props.settings;
+    const callback = props.callback;
 
     return (
         <div>
@@ -17,6 +18,7 @@ export default function Settings(props) {
                             {
                                 <div onClick={() => {
                                     documentSettings.settings[e] = !documentSettings.settings[e];
+                                    callback(documentSettings);
                                 }}>
                                     { documentSettings.settings[e] ? <Check/> : <Square /> }
                                 </div>

@@ -31,6 +31,14 @@
   outline: none;
 }
 
+/* .time {
+  background-color: rgb(255 255 255 / 0%);
+  backdrop-filter: blur(5px);
+
+  padding: 1rem;
+  border-radius: 3px; 
+} */
+
 .time h1 {
   margin: 0;
   line-height: 8rem;
@@ -64,9 +72,6 @@
   flex-direction: column;
 
   justify-content: space-between;
-}
-
-.leftSide > div {
   padding: 5rem;
 }
 
@@ -108,7 +113,7 @@
 }
 
 .todoHeader {
-  background-color: #e2e2e2;
+  background-color: #ffffff;
   color: black;
 
   padding: 0rem 1rem;
@@ -234,7 +239,7 @@
   bottom: 0;
 
   user-select: none;
-  pointer-events: none;
+  backdrop-filter: blur(5px);
 }
 
 .settingsOverlay > div {
@@ -297,4 +302,38 @@
 
   padding: .5rem 1rem;
   color: #3b3b3b;
+}
+
+.photoCredit {
+  position: absolute;
+
+  bottom: 0;
+  right: 0;
+
+  margin: 0 !important;
+  padding: 1.5rem;
+}
+
+.photoCredit p {
+  margin: 0 !important;
+}
+
+.photoCredit > p {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+  gap: .2rem;
+}
+
+.photoCredit > p > p {
+  opacity: .4;
+}
+
+.photoCredit a {
+  opacity: .4;
+}
+
+.photoCredit a:hover {
+  opacity: 1;
 }
