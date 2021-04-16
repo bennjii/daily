@@ -78,10 +78,21 @@ export default function Home() {
 			</div>
 
 			<div className={styles.time}>
-				<h1 style={{ color:  color }}>{date.getHours() > 12 ? date.getHours()-12 : date.getHours() }:{ (date.getMinutes() < 10) ? `0${date.getMinutes()}` : date.getMinutes() }</h1>
+				<h1 style={{ color:  color }}>
+					{
+						(documentSettings.settings.hour24) ?
+						date.getHours() 
+						:
+						date.getHours() > 12 ? date.getHours()-12 : date.getHours() 
+					}
+					:
+					{ 
+						(date.getMinutes() < 10) ? `0${date.getMinutes()}` : date.getMinutes() 
+					}
+				</h1>
 
 				<div>
-					<p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase()}</p>
+					<p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: (documentSettings.settings.shortDate) ? 'short' : 'long' }).toUpperCase()}</p>
 
 					<Settings color={"#f4f4f40e"} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
 				</div>
