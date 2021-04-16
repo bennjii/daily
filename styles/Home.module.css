@@ -210,6 +210,7 @@
   flex: 1;
   text-align: left;
   width: 100%;
+  font-size: 1rem;
 }
 
 .completedTask {
@@ -302,6 +303,8 @@
 
   padding: .5rem 1rem;
   color: #3b3b3b;
+
+  font-size: 1rem;
 }
 
 .photoCredit {

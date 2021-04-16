@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "compile": "next build && next export && cd ./out && ren _next next"
   },
   "dependencies": {
     "@types/node": "^14.14.37",

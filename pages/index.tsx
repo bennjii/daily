@@ -61,7 +61,7 @@ export default function Home() {
   return (
 	<div className={styles.container} style={{ backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}>
 		<Head>
-			<title>Daily</title>
+			<title>New Tab</title>
 			<link rel="icon" href="/favicon.ico" />
 		</Head>
 
