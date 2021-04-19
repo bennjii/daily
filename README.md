@@ -12,7 +12,7 @@ Daily is a chrome extention which replaces your new tab with a custom curated vi
 ## How to Install
 
 ### Method 1: (Local)
-1. Download the attached zip folder
+1. Download the zip folder from the latest release under the format: `daily_v[].[].zip`
 2. Open your Chromium Browser
 3. Head to `browserName://extensions/`     e.g. `chrome://extensions/` or `brave://extensions/`
 4. Find the .zip folder in your file explorer
