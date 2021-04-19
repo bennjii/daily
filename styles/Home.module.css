@@ -81,6 +81,33 @@
 
 .rightSide > div {
   width: 20vw;
+
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.rightSide > div input {
+  display: flex;
+  flex-direction: row;
+
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 0rem !important;
+  color: #3b3b3b;
+
+  gap: 1rem;
+
+  background-color: transparent;
+  border-radius: 3px;
+
+  border: none;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+
+  font-size: 1rem;
 }
 
 .toDo {
@@ -339,4 +366,9 @@
 
 .photoCredit a:hover {
   opacity: 1;
+}
+
+.none {
+  display: none !important;
+  visibility: hidden !important;
 }
