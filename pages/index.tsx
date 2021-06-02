@@ -10,6 +10,7 @@ import SettingsMenu from '@components/settings'
 import QuoteOfTheDay from '@components/qotd'
 
 import { Box, Check, Eye, Plus, Settings, Square, Trash, X } from 'react-feather'
+import Scene from '@components/scene'
 
 export default function Home() {
   const [ date, setDate ] = useState(new Date());
@@ -34,7 +35,8 @@ export default function Home() {
 				showAds: false,
 				hour24: false,
 				shortDate: false,
-				quoteOfTheDay: false
+				quoteOfTheDay: false,
+				backgroundType: 'chaos'  //standard, chaos, custom
 			}
 		}
   );
@@ -65,11 +67,33 @@ export default function Home() {
   }, [documentSettings])
 
   return (
-	<div className={styles.container} style={{ backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, backgroundRepeat: 'no-repeat', backgroundSize: 'cover' }}>
+	<div className={styles.container} style={
+		(documentSettings.settings.backgroundType == "chaos") ?
+		{ 	
+			background: 'rgb(0, 0, 0)',
+			backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
+			backgroundColor: '#000'
+		}
+		:
+		{
+			backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
+			backgroundRepeat: 'no-repeat', 
+			backgroundSize: 'cover'
+		}}>
+
 		<Head>
 			<title>New Tab</title>
 			<link rel="icon" href="/favicon.ico" />
 		</Head>
+
+		{
+			documentSettings.settings.backgroundType == 'chaos' && 
+			<div className={styles.background} >
+				<Scene />
+			</div>
+		}
+		
+		
 
 		<div className={styles.leftSide}>
 			<div>
@@ -196,7 +220,7 @@ export default function Home() {
 											<Trash color={(e.completed) ? "#226d38" : "#3b3b3b"} size={20} onClick={(e) => {
 												todo.splice(index, 1);
 												localStorage.setItem("todo", JSON.stringify(todo));
-												}} onMouseOver={(e) => {
+											}} onMouseOver={(e) => {
 												//@ts-expect-error
 												if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {
 													//@ts-expect-error
@@ -205,7 +229,6 @@ export default function Home() {
 													//@ts-expect-error
 													e.target.classList.add(styles.todoTrashHover)
 												}
-											
 											}} onMouseLeave={(e) => {
 												//@ts-expect-error
 												if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {
@@ -252,10 +275,18 @@ export default function Home() {
 		}
 	  
 		<div className={styles.photoCredit}>
-			<p style={{ color, fontWeight: 100, fontSize: '12px' }}>
-				<p>Photo by</p>
-				<a href={`https://unsplash.com/@${background?.user?.username}`}>{background?.user?.name} {background?.user?.lastName}</a>
-			</p>
+			{
+				documentSettings.settings.backgroundType == 'standard' ?
+				<p style={{ color, fontWeight: 100, fontSize: '12px' }}>
+					<p>Photo by</p>
+					<a href={`https://unsplash.com/@${background?.user?.username}`}>{background?.user?.name} {background?.user?.lastName}</a>
+				</p>
+				:
+				<p style={{ color, fontWeight: 100, fontSize: '12px' }}>
+					<p>Lorenz Chaos Attractor</p>
+				</p>
+			}
+			
 		</div>
 	  {
 	  /* 
