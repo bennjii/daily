@@ -51,7 +51,7 @@ export default function Home() {
 						title: "search",
 						bind: 's',
 						action: (string) => {
-							console.log('ducking', string)
+							window.location.replace(`https://duckduckgo.com/?q=${string}`)
 						}
 					},
 					{
@@ -80,7 +80,7 @@ export default function Home() {
 						title: "wikipedia",
 						bind: 'w',
 						action: (string) => {
-							window.location.href = `https://en.wikipedia.org/wiki/${string}`
+							window.location.replace(`https://en.wikipedia.org/wiki/${string}`)
 						}
 					}
 				]

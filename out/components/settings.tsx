@@ -15,14 +15,21 @@ export default function Settings(props) {
                         <div className={styles.settingsItem}>
                             <p>{e}</p>
                             
-                            {
+                            {   
+                                typeof(documentSettings.settings[e]) == 'boolean' ?
                                 <div onClick={() => {
                                     documentSettings.settings[e] = !documentSettings.settings[e];
                                     callback(documentSettings);
                                 }}>
                                     { documentSettings.settings[e] ? <Check/> : <Square /> }
                                 </div>
-                                
+                                :
+                                <div onClick={() => {
+                                    documentSettings.settings[e] = (documentSettings.settings[e] == 'chaos') ? 'standard' : 'chaos';
+                                    callback(documentSettings);
+                                }}>
+                                    { documentSettings.settings[e] == 'chaos' ? <p>Chaos</p> : <p>Image</p> }
+                                </div>
                             }
                         </div>
                     )
