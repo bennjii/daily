@@ -1,3 +1,5 @@
+mkdir out;
+
 rm -rf .next/ out/;
 rm extension.zip;
 
@@ -9,4 +11,6 @@ cp manifest.json ./out;
 mv ./out/_next ./out/next
 cd ./out && grep -rli '_next' * | xargs -I@ sed -i '' 's/_next/next/g' @;
 
-zip -r -FS ../my-extension.zip *;
+zip -r -FS ../daily.zip *;
+
+echo ✨ Compiled Sucessfully 

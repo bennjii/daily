@@ -171,6 +171,7 @@ export default function Home() {
 			<Head>
 				<title>New Tab</title>
 				<link rel="icon" href="/favicon.ico" />
+				
 			</Head>
 
 			{
