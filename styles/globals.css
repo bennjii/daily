@@ -27,3 +27,8 @@ a {
 * {
   box-sizing: border-box;
 }
+
+/* :root {
+  --primary-color: '#3b3b3b';
+  --background-color: '#fff';
+} */
