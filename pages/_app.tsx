@@ -3,9 +3,6 @@ import '../styles/globals.css'
 import type { AppProps /*, AppContext */ } from 'next/app'
 
 function App({ Component, pageProps }: AppProps) {
-  const headers = new Headers();
-  headers.append('Content-Security-Policy', 'unsafe-eval');
-
   return <Component {...pageProps} />
 }
 

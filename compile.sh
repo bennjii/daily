@@ -1,7 +1,7 @@
-mkdir out;
-
 rm -rf .next/ out/;
-rm extension.zip;
+rm *.zip;
+
+mkdir out;
 
 yarn next build;
 yarn next export;

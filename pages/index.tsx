@@ -27,7 +27,7 @@ export default function Home() {
 	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : [])
 	const [ documentSettings, setDocumentSettings ] = useState<Document>(
 		(process.browser) && localStorage.getItem("settings") ? 
-			JSON.parse(localStorage.getItem("settings"), (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("("+v+")") : v): v) 
+			JSON.parse(localStorage.getItem("settings"), (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ) // eval("("+v+")")
 		: 
 		{
 			states: {
@@ -98,6 +98,10 @@ export default function Home() {
 			//@ts-expect-error
 			if(documentSettings.states.searchOpen && searchRef.current) searchRef.current.focus();
 			else setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: true, onSearchCompletion: null }});
+		});
+
+		const escape = listener.subscribe('Escape', () => {
+			if(documentSettings.states.searchOpen) setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
 		});
 
 		const resetState = listener.subscribe('Shift+Down', () => {
