@@ -23,14 +23,14 @@ export default function SettingsPage() {
                         className={activePannel == 'prefrences' ? styles.settingsActivePannel : ''}
                         onClick={() => setActivePannel('prefrences')}
                     >
-                        <ChevronsRight size={18} color={activePannel == 'prefrences' ? "var(--complementary-color)" : "var(--primary-color)"} />
+                        <ChevronsRight size={18} color={activePannel == 'prefrences' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"} />
                     </div>
 
                     <div 
                         className={activePannel == 'bindings' ? styles.settingsActivePannel : ''}
                         onClick={() => setActivePannel('bindings')}
                     >
-                        <Link size={18} color={activePannel == 'bindings' ? "var(--complementary-color)" : "var(--primary-color)"}/>
+                        <Link size={18} color={activePannel == 'bindings' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"}/>
 
                         <div className={styles.new}>new</div>
                     </div>
@@ -39,20 +39,20 @@ export default function SettingsPage() {
                         className={activePannel == 'accounts' ? styles.settingsActivePannel : ''}
                         onClick={() => setActivePannel('accounts')}
                     >
-                        <AtSign size={18} color={activePannel == 'accounts' ? "var(--complementary-color)" : "var(--primary-color)"} />
+                        <AtSign size={18} color={activePannel == 'accounts' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"} />
                     </div>
 
                     <div 
                         className={activePannel == 'theme' ? styles.settingsActivePannel : ''}
                         onClick={() => setActivePannel('theme')}
                     >
-                        <Moon size={18} color={activePannel == 'theme' ? "var(--complementary-color)" : "var(--primary-color)"} />
+                        <Moon size={18} color={activePannel == 'theme' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"} />
                     </div>
                 </div>
                 <div>
                     <div className={styles.logo} onClick={() => {
                         openInNewTab('https://github.com/UnRealReincarlution/daily')
-                    }}><GitHub size={13} color={"#fff"}/></div>
+                    }}><GitHub size={13} color={"rgb(var(--complementary-color))"}/></div>
                     daily
                 </div>
             </div>
@@ -63,7 +63,7 @@ export default function SettingsPage() {
                 <div>
                     ESC
                     <div className={styles.settingsActivePannel}>
-                        <X color={"var(--complementary-color)"} size={18} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: false } })}/>
+                        <X color={"rgb(var(--complementary-color))"} size={18} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: false } })}/>
                     </div>
                 </div>     
             </div>

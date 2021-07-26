@@ -45,7 +45,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                             </div>
 
                             {
-                                authError && <div className={styles.authError}><AlertCircle size={18} strokeWidth={1} color={"var(--primary-color)"}/><p>{authError}</p></div>
+                                authError && <div className={styles.authError}><AlertCircle size={18} strokeWidth={1} color={"rgb(var(--primary-color))"}/><p>{authError}</p></div>
                             }
 
                             <div>
@@ -78,7 +78,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                             </div>
 
                             {
-                                authError && <div className={styles.authError}><AlertCircle size={18} strokeWidth={1} color={"var(--primary-color)"}/><p>{authError}</p></div>
+                                authError && <div className={styles.authError}><AlertCircle size={18} strokeWidth={1} color={"rgb(var(--primary-color))"}/><p>{authError}</p></div>
                             }
 
                             <div>
@@ -122,7 +122,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                             
                             <div className={styles.authSuccess}>
                                 <div className={styles.authSuccessCircle}>
-                                    <Check color={"var(--complementary-color)"} size={64}/>
+                                    <Check color={"rgb(var(--complementary-color))"} size={64}/>
                                 </div>
                                 
                                 <div>

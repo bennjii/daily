@@ -70,7 +70,7 @@ class Button extends React.Component<{title: string, redirect?: string | never, 
                     </Loading>
                 }
 
-                <ArrowRight size={13} color={"var(--primary-color)"}/>
+                <ArrowRight size={13} color={"rgb(var(--primary-color))"}/>
             </button>
         )
     }

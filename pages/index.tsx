@@ -20,6 +20,8 @@ import { DocumentContext } from '@public/@types/document_context'
 import FirstTime from '@components/first_time'
 import { supabase } from '@root/client'
 
+import { getThemeColor, theme_list } from '@public/@types/themes'
+
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
 	const [ background, setBackground ] = useState(null);
@@ -30,7 +32,7 @@ export default function Home() {
 
 	if(!process.browser) return <></>;
 
-	const color = "var(--clock-color)"; //`#${invert(background?.color ? background.color : '#000000')}`;
+	const color = "rgb(var(--clock-color))"; //`#${invert(background?.color ? background.color : '#000000')}`;
 	
 	useEffect(() => {
 		supabase.auth.onAuthStateChange((event, session) => {
@@ -67,6 +69,11 @@ export default function Home() {
 					value: 'things to do',
 					desc: 'Title of TODO List',
 					type: "input"
+				},
+				theme: {
+					value: 'default',
+					desc: 'Customisable Daily Theme',
+					type: "invisible"
 				},
 				showToDo: {
 					value: true,
@@ -251,14 +258,17 @@ export default function Home() {
 				{ 	
 					background: 'rgb(0, 0, 0)',
 					backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
-					backgroundColor: '#000'
+					backgroundColor: '#000',
+					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
 				}
 				:
 				{
 					backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
 					backgroundRepeat: 'no-repeat', 
-					backgroundSize: 'cover'
-				}}>
+					backgroundSize: 'cover',
+					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+				}
+			}>
 
 				<Head>
 					<title>New Tab</title>
@@ -304,7 +314,7 @@ export default function Home() {
 						<div>
 							<p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: (documentSettings.settings.shortDate.value) ? 'short' : 'long' }).toUpperCase()}</p>
 
-							<Settings color={"var(--clock-color)"} opacity={0.055} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
+							<Settings color={"rgb(var(--clock-color))"} opacity={0.055} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
 						</div>
 					</div>
 				</div>
@@ -339,11 +349,11 @@ export default function Home() {
 									(() => {
 										switch(documentSettings.states.onSearchCompletion?.title) {
 											case 'search':
-												return <ArrowRight size={15} color={"var(--primary-color)"} opacity={"0.7"}/>
+												return <ArrowRight size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
 											case 'task':
-												return <Plus size={15} color={"var(--primary-color)"} opacity={"0.7"}/>
+												return <Plus size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
 											default:
-												return <ArrowRight size={15} color={"var(--primary-color)"} opacity={"0.7"}/>
+												return <ArrowRight size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
 										}
 									})()
 								}
@@ -370,7 +380,7 @@ export default function Home() {
 									<h2 onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: true } })}>{documentSettings.settings.title.value}</h2>
 								}
 							
-								<Plus color={"var(--primary-color)"} size={20} strokeWidth={1.5} onClick={() => {
+								<Plus color={"rgb(var(--primary-color))"} size={20} strokeWidth={1.5} onClick={() => {
 									todo.push({
 										editable: true,
 										title: '',
@@ -416,7 +426,14 @@ export default function Home() {
 													}} autoFocus/>
 												</div>
 												:
-												<div className={(e.completed) ? styles.completedTask : styles.uncompletedTask }>
+												<div 
+													className={(e.completed) ? styles.completedTask : styles.uncompletedTask }
+													style={{ backgroundColor: e.completed ? 
+														`rgb(${getThemeColor(documentSettings.settings.theme.value, "--approval-color")?.split(',').map(e => (parseInt(e) < 255-150) ? parseInt(e) + 150 : 255 ).join(',')})`
+														: 
+														''  
+													}}
+												>
 													<div className={styles.todoLabel}>
 														<p onClick={() => {
 															todo[index].editable = true
@@ -427,19 +444,19 @@ export default function Home() {
 													{
 														(e.completed)
 														?
-														<Check color={(e.completed) ? "var(--approval-color)" : "var(--primary-color)"} size={20}  onClick={(e) => {
+														<Check color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20}  onClick={(e) => {
 															todo[index].completed = false;
 															localStorage.setItem("todo", JSON.stringify(todo));
 														}}/>
 														:
-														<Square color={(e.completed) ? "var(--approval-color)" : "var(--primary-color)"} size={20} onClick={(e) => {
+														<Square color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
 															todo[index].completed = true;
 															localStorage.setItem("todo", JSON.stringify(todo));
 														}}/>
 													}
 													</div>
 
-													<Trash color={(e.completed) ? "var(--approval-color)" : "var(--primary-color)"} size={20} onClick={(e) => {
+													<Trash color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
 														todo.splice(index, 1);
 														localStorage.setItem("todo", JSON.stringify(todo));
 													}} onMouseOver={(e) => {

@@ -11,6 +11,9 @@
 
     --font-family: 'Roboto Mono';
     font-family: var(--font-family) !important;
+
+    --primary-color: rgb(var(var(--primary-color)));
+    --background-color: rgb(var(var(--background-color)));
 }
 
 .authBox {

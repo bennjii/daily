@@ -36,7 +36,7 @@ export default function Accounts(props) {
                         >
                             {
                                 supabase.auth.user().aud == 'authenticated' ?
-                                <Check size={18} color={"var(--complementary-color)"} />
+                                <Check size={18} color={"rgb(var(--complementary-color))"} />
                                 :
                                 <p>Link Account</p>
                             }
@@ -55,7 +55,7 @@ export default function Accounts(props) {
                         >
                             {
                                 supabase.auth.user().aud == 'authenticated' ?
-                                <Check size={18} color={"var(--complementary-color)"} />
+                                <Check size={18} color={"rgb(var(--complementary-color))"} />
                                 :
                                 <p>Link Account</p>
                             }

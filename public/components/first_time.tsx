@@ -5,6 +5,7 @@ import { supabase } from '@root/client';
 import { useContext, useEffect, useState } from 'react';
 import { AtSign, Box, Check, ChevronsRight, Gift, GitHub, Link, Moon, Square, ToggleLeft, X } from 'react-feather'
 import styles from '../../styles/Home.module.css'
+import AllSet from './all-set';
 import Auth from './auth';
 import Features from './features';
 import Accounts from './settings_accounts';
@@ -43,7 +44,7 @@ export default function FirstTime() {
                 <div>
                     <div className={styles.logo} onClick={() => {
                         openInNewTab('https://github.com/UnRealReincarlution/daily')
-                    }}><GitHub size={13} color={"#fff"}/></div>
+                    }}><GitHub size={13} color={"rgb(var(--complementary-color))"}/></div>
                     daily
                 </div>
             </div>
@@ -59,7 +60,7 @@ export default function FirstTime() {
                             case "features":
                                 return <Features callback={setActivePannel}/>
                             case "all-set":
-                                return <></>
+                                return <AllSet callback={setActivePannel}/>
                             default: 
                                 return (
                                     <div>

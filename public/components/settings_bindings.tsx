@@ -217,7 +217,7 @@ export default function Bindings(props) {
                                         })
                                     }}
                                 >
-                                    <Code size={18} color={"var(--complementary-color)"} />
+                                    <Code size={18} color={"rgb(var(--complementary-color))"} />
                                 </div>
                             </div>
                         )
