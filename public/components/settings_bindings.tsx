@@ -9,7 +9,7 @@ export default function Bindings(props) {
     const documentSettings = props.settings;
     const callback = props.callback;
 
-    const key_ref = useRef();
+    const key_ref = useRef<HTMLInputElement>();
 
     const [ keybindSetter, setKeybindSetter ] = useState({
         open: false,
@@ -61,6 +61,7 @@ export default function Bindings(props) {
                             onChange={(e) => {
                                 key_ref?.current?.blur();
                                 key_ref.current.disabled = true;
+
                                 const new_binding = e.target.value;
 
                                 const exists = documentSettings.powertools.powerbinds.filter(e => e.bind == new_binding);
@@ -119,7 +120,6 @@ export default function Bindings(props) {
                             rows={15}
                             placeholder={"function action(string) {}"}
                             defaultValue={"" + customFunction.ref.action} 
-                            ref={key_ref}
                             onChange={(e) => {
                                 setCustomFunction({
                                     ...customFunction,
@@ -128,7 +128,7 @@ export default function Bindings(props) {
                             }}
                         />
                         
-                        
+
                     </div>
                 </div>
                 :
@@ -181,7 +181,7 @@ export default function Bindings(props) {
                 {
                     documentSettings.powertools.powerbinds.map(powerbind => {
                         return (
-                            <div className={styles.powerBindListElement} key={`POWERBIND-${powerbind.bind}`}>
+                            <div className={styles.powerBindListElement} key={`POWERBIND-${powerbind.title}`}>
                                 <div
                                     className={styles.settingsActivePannel}
                                     onClick={() => {

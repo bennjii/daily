@@ -7,10 +7,11 @@ import styles from '../../styles/Home.module.css'
 import Accounts from './settings_accounts';
 import Bindings from './settings_bindings';
 import Prefrences from './settings_prefrences'
+import Theme from './settings_theme';
 
 export default function SettingsPage() {
     const [ activePannel, setActivePannel ] = useState('prefrences'); // prefrences, bindings, accounts
-    const { documentSettings, setDocumentSettings } = useContext(DocumentContext);
+    const { documentSettings, setDocumentSettings, userData } = useContext(DocumentContext);
 
     return (
         
@@ -59,9 +60,12 @@ export default function SettingsPage() {
             <div className={styles.settingsHeader}>
                 <h2>settings - {activePannel}</h2>
 
-                <div className={styles.settingsActivePannel}>
-                    <X color={"var(--complementary-color)"} size={18} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: false } })}/>
-                </div>
+                <div>
+                    ESC
+                    <div className={styles.settingsActivePannel}>
+                        <X color={"var(--complementary-color)"} size={18} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: false } })}/>
+                    </div>
+                </div>     
             </div>
 
             <div className={styles.settingsBody}>
@@ -73,11 +77,15 @@ export default function SettingsPage() {
                             case "bindings":
                                 return <Bindings settings={documentSettings} callback={setDocumentSettings}/>
                             case "accounts":
-                                return <Accounts />
+                                return <Accounts settings={documentSettings} callback={setDocumentSettings} user={userData}/>
+                            case "theme":
+                                return <Theme settings={documentSettings} callback={setDocumentSettings} /> 
                             default: 
-                                return <div>
-                                    <p><i>Something went wrong :(</i></p>
-                                </div>
+                                return (
+                                    <div>
+                                        <p><i>Something went wrong :(</i></p>
+                                    </div>
+                                )
                         }
                     })()
                 }

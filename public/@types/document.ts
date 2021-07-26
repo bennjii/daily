@@ -13,7 +13,7 @@ export type Document = {
         shortDate: Prefrence & {value: boolean},
         quoteOfTheDay: Prefrence & {value: boolean},
         backgroundType: Prefrence & {value: "standard" | "chaos" | "custom"},  //standard, chaos, custom
-        firstTime: Prefrence & {value: "invisible"}
+        firstTime: Prefrence & {value: boolean}
     },
     powertools: {
         search_engine: "duckduckgo" | "google" | "escosia",
@@ -21,10 +21,15 @@ export type Document = {
     }
 }
 
+export type User = {
+    username: string,
+    creation_date: number
+}
+
 export type Prefrence = {
     value: string | boolean,
     desc: string,
-    type: "input" | "toggle" | "list"
+    type: "input" | "toggle" | "list" | "invisible"
 }
 
 export type Binding = {
@@ -36,7 +41,9 @@ export type Binding = {
 
 export type DocumentContextType = {
     documentSettings: Document,
-    setDocumentSettings: Function
+    setDocumentSettings: Function,
+    userData: User,
+    setUserData: Function
 }
 
 export type DocumentFeaturesContextType = {

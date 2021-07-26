@@ -10,22 +10,40 @@ import SettingsMenu from '@components/settings_prefrences'
 import QuoteOfTheDay from '@components/qotd'
 
 import { createListener } from "keyboardist";
-import { Binding, Document } from '@public/@types/document'
+import { Binding, Document, User } from '@public/@types/document'
 
 import { ArrowRight, Box, Check, Eye, Plus, Settings, Square, Trash, X } from 'react-feather'
 import Scene from '@components/scene'
 import SettingsPage from '@components/settings_page'
 import { DocumentContext } from '@public/@types/document_context'
 
+import FirstTime from '@components/first_time'
+import { supabase } from '@root/client'
+
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
 	const [ background, setBackground ] = useState(null);
 	const [ quoteOfTheDay, setQuoteOfTheDay ] = useState(null);
+	const [ userData, setUserData ] = useState<User>(null);
 
 	const searchRef = useRef();
 
+	if(!process.browser) return <></>;
+
 	const color = "var(--clock-color)"; //`#${invert(background?.color ? background.color : '#000000')}`;
 	
+	useEffect(() => {
+		supabase.auth.onAuthStateChange((event, session) => {
+			supabase
+				.from('users')
+				.select('*')
+				.eq('id', session.user.id)
+				.then(usr => {
+					setUserData(usr.data[0])
+				})
+		});
+	}, [])
+
 	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : [])
 	const [ documentSettings, setDocumentSettings ] = useState<Document>(
 		(process.browser) && localStorage.getItem("settings") ? 
@@ -156,21 +174,37 @@ export default function Home() {
 		
 		//@ts-expect-error
 		const listener = new createListener();
+		listener.setMonitor(true);
 
 		const escape = listener.subscribe('Escape', () => {
-			if(documentSettings.states.searchOpen) setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
-			if(documentSettings.states.settingsOpen) setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, settingsOpen: false }});
+			console.log("ESCAPEEE");
+
+			if(documentSettings.states.searchOpen) {
+				documentSettings.states.searchOpen = false;
+				setDocumentSettings(documentSettings);
+
+				// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
+			}
+			if(documentSettings.states.settingsOpen) {
+				documentSettings.states.settingsOpen = false;
+				setDocumentSettings(documentSettings);
+
+				// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, settingsOpen: false }});
+			}
 		});
 
 		const resetState = listener.subscribe('Shift+Down', () => {
 			setDocumentSettings(null);
 			localStorage.removeItem("settings");
+			supabase.auth.signOut();
 
 			window.location.reload();
 		});
 
 		documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
 			listener.subscribe(`Shift+key${powerbind.bind}`, () => {
+				console.log(documentSettings.states);
+
 				setDocumentSettings({ 
 					...documentSettings, 
 					states: { 
@@ -211,7 +245,7 @@ export default function Home() {
 	}, [documentSettings])
 
 	return (
-		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings }}>
+		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
 			<div className={styles.container} style={
 				(documentSettings.settings.backgroundType.value == "chaos") ?
 				{ 	
@@ -228,8 +262,7 @@ export default function Home() {
 
 				<Head>
 					<title>New Tab</title>
-					<link rel="icon" href="/favicon.ico" />
-					
+					<link rel="icon" href="/favicon.ico" />	
 				</Head>
 
 				{
@@ -444,10 +477,19 @@ export default function Home() {
 				{
 					documentSettings.states.settingsOpen ?
 					<div className={styles.settingsOverlay} id={"settingsBackground"} onClick={(e) => {
-						//@ts-expect-error
-						if(e.target.id == 'settingsBackground') setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })
+						// // @ts-expect-error
+						// if(e.target.id == 'settingsBackground') setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })
 					}}>
 						<SettingsPage />
+					</div>
+					:
+					<></>
+				}
+
+				{
+					documentSettings.settings.firstTime.value ?
+					<div className={styles.settingsOverlay}>
+						<FirstTime />
 					</div>
 					:
 					<></>
