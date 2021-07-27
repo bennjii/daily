@@ -20,7 +20,7 @@ import { DocumentContext } from '@public/@types/document_context'
 import FirstTime from '@components/first_time'
 import { supabase } from '@root/client'
 
-import { getThemeColor, theme_list } from '@public/@types/themes'
+import { getThemeColor, loadTheme, theme_list } from '@public/@types/themes'
 
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
@@ -230,7 +230,7 @@ export default function Home() {
 
 	useEffect(() => {
 		console.log("Component Started");
-		console.log(documentSettings)
+		console.log(documentSettings);
 
 		const repeat = () => {
 			setDate(new Date());
@@ -239,17 +239,23 @@ export default function Home() {
 
 		setTimeout(repeat, 100);
 
-		(async () => {
-			// api.unsplash.com/photo/_8zfgT9kS2g&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4 - Single Photo (1538150) (1368747 - TXTURES) (1041983 - BG's)
-			// https://api.unsplash.com/photos/random/?collections=1368747&count=1&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4
-			setBackground((await axios.get('https://api.unsplash.com/photos/aQcE3gDSSTY?client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4')).data);
-			documentSettings.settings.quoteOfTheDay.value ?? setQuoteOfTheDay((await (await axios.get('http://quotes.rest/qod.json')).data));
-		})();
+		// (async () => {
+		// 	// api.unsplash.com/photo/_8zfgT9kS2g&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4 - Single Photo (1538150) (1368747 - TXTURES) (1041983 - BG's)
+		// 	// https://api.unsplash.com/photos/random/?collections=1368747&count=1&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4
+		// 	setBackground((await axios.get('https://api.unsplash.com/photos/aQcE3gDSSTY?client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4')).data);
+		// 	documentSettings.settings.quoteOfTheDay.value ?? setQuoteOfTheDay((await (await axios.get('http://quotes.rest/qod.json')).data));
+		// })();
 	}, []);
 
 	useEffect(() => {
 		localStorage.setItem("settings", JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v));
 	}, [documentSettings])
+
+	useEffect(() => {
+		console.log('Loading Theme', documentSettings.settings.theme);
+
+		loadTheme(documentSettings.settings.theme.value)
+	}, [])
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>

@@ -92,6 +92,8 @@ export const saveTheme = (theme) => {
 export const loadTheme = (name) => {
     const loaded_theme = JSON.parse(localStorage.getItem(`custom-${name}`));
 
+    console.log(loaded_theme);
+
     if(loaded_theme) {
         const index = theme_list.findIndex(e => e.name == name)
         if(index !== -1) {
