@@ -1,20 +1,30 @@
 import { DocumentContextType } from '@public/@types/document';
 import { DocumentContext } from '@public/@types/document_context'
 import { truncate } from 'node:fs';
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { Box, Check, Code, Square } from 'react-feather'
 import styles from '@styles/Home.module.css'
 
 import { HexColorPicker } from 'react-colorful' 
 
-import { hexToRGB, RGBToHex, theme_list } from '@public/@types/themes' 
+import { hexToRGB, RGBToHex, saveTheme, theme_list } from '@public/@types/themes' 
 
 export default function Theme(props) {
     const documentSettings = props.settings;
     const callback = props.callback;
 
-    const colors = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors;
-    console.log(colors);
+    const [ colors, setColors ] = useState(theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors);
+
+    useEffect(() => {
+        console.log("Theme Changed!");        
+        setColors(theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors);
+
+        if(documentSettings.settings.theme.value.includes("custom")) {
+            const theme = theme_list.find(e => e.name == documentSettings.settings.theme.value);
+            saveTheme(theme);
+        }
+
+    }, [, theme_list])
 
     return (
         <div style={{ position: 'relative' }}>
@@ -32,8 +42,22 @@ export default function Theme(props) {
                                 //@ts-expect-error
                                 style={{ ...theme.colors }}
                                 onClick={() => {
+                                    // callback({
+                                    //     ...documentSettings,
+                                    //     settings: {
+                                    //         ...documentSettings.settings,
+                                    //         theme: {
+                                    //             ...documentSettings.settings.theme,
+                                    //             value: theme.name
+                                    //         }
+                                    //     }
+                                    // });
+
                                     documentSettings.settings.theme.value = theme.name;
                                     callback(documentSettings);
+
+                                    // documentSettings.settings.theme.value = theme.name;
+                                    // callback(documentSettings);
                                 }}
                             >
                                 {
@@ -58,7 +82,9 @@ export default function Theme(props) {
 
                     <HexColorPicker color={RGBToHex(colors['--primary-color'])} onChange={(e) => {
                         const rgb = hexToRGB(e);
-                        theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors['--primary-color'] = `${rgb.r},${rgb.g},${rgb.b}`;
+                        const ref = theme_list.find((e) => e.name == documentSettings.settings.theme.value);
+
+                        ref.colors['--primary-color'] = `${rgb.r},${rgb.g},${rgb.b}`;
                     }}/>
                 </div>
 
@@ -77,17 +103,20 @@ export default function Theme(props) {
                     <HexColorPicker color={RGBToHex(colors['--background-color'])} onChange={(e) => {
                         const rgb = hexToRGB(e);
                         theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors['--background-color'] = `${rgb.r},${rgb.g},${rgb.b}`;
+
+                        const theme = theme_list.find(e => e.name == documentSettings.settings.theme.value);
+                        saveTheme(theme);
                     }}/>
                 </div>
 
-                <div>
+                {/* <div>
                     <p>Clock Color</p>
 
                     <HexColorPicker color={RGBToHex(colors['--clock-color'])} onChange={(e) => {
                         const rgb = hexToRGB(e);
                         theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors['--clock-color'] = `${rgb.r},${rgb.g},${rgb.b}`;
                     }}/>
-                </div>
+                </div> */}
 
                 <div>
                     <p>Approval Color</p>

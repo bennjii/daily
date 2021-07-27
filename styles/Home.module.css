@@ -25,6 +25,8 @@
   display: flex;
   flex-direction: row;
   gap: 1rem;
+
+  font-size: .8rem !important;
 }
 
 .customActive {
@@ -33,7 +35,7 @@
 }
 
 .customDeactivated {
-  opacity: .4;
+  opacity: .1;
   pointer-events: none;
 }
 
@@ -61,7 +63,7 @@
   align-items: center;
   gap: 1rem;
 
-  
+  font-size: .9rem;
 }
 
 .themeIcon:hover {
@@ -598,7 +600,7 @@
 }
 
 .settingsBody > div > p {
-  font-size: .9em;
+  font-size: .9rem;
   opacity: .8;
 }
 
@@ -785,6 +787,7 @@
   /* border: 1px solid #3b3b3b !important; */
 
   font-family: 'Roboto Mono' !important;
+  color: rgb(var(--primary-color));
 }
 
 .searchResults {

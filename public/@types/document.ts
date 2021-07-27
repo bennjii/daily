@@ -44,7 +44,9 @@ export type DocumentContextType = {
     documentSettings: Document,
     setDocumentSettings: Function,
     userData: User,
-    setUserData: Function
+    setUserData: Function,
+    theme: any,
+    setTheme: Function
 }
 
 export type DocumentFeaturesContextType = {
