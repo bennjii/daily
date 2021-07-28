@@ -7,6 +7,7 @@ export type Document = {
     },
     settings: {
         title: Prefrence & {value: string},
+        theme: Prefrence & {value: string},
         showToDo: Prefrence & {value: boolean},
         showAds: Prefrence & {value: boolean},
         hour24: Prefrence & {value: boolean},

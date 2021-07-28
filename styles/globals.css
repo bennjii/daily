@@ -32,7 +32,6 @@ h1 {
   font-size: 2rem;
 }
 
-/* :root {
-  --primary-color: '#3b3b3b';
-  --background-color: '#fff';
-} */
+.react-colorful {
+  width: 100% !important;
+}

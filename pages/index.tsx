@@ -21,6 +21,10 @@ import FirstTime from '@components/first_time'
 import { supabase } from '@root/client'
 
 import { getThemeColor, loadTheme, theme_list } from '@public/@types/themes'
+import { RGBToHex } from '@root/out/@types/themes'
+
+import { ntc } from '@components/ntc'
+import { Blurhash } from "react-blurhash";
 
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
@@ -110,6 +114,11 @@ export default function Home() {
 					desc: 'Changes the background prefrence of the user',
 					type: "list[standard, chaos]"
 				},  //standard, chaos, custom
+				backgroundImage: {
+					value: "color",
+					desc: "Changes the background image for standard and custom",
+					type: "invisible"
+				}
 			},
 			powertools: {
 				search_engine: "duckduckgo",
@@ -255,27 +264,95 @@ export default function Home() {
 		console.log('Loading Theme', documentSettings.settings.theme);
 
 		loadTheme(documentSettings.settings.theme.value)
-	}, [])
+	}, []);
+
+	const [ backgroundStyle, sbs ] = useState(null);
+	const [ backgroundStats, sbst ] = useState(null);
+
+	useEffect(() => {
+		console.log("Background Image Changed.");
+
+		sbs((async () => {
+			switch(documentSettings.settings.backgroundImage.value) {
+				case "color":
+					return { 
+							backgroundColor: 'rgb(var(--wallpaper-color))'
+						}
+				case "dynamic":
+					//fetch
+					const rgb = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors["--wallpaper-color"];
+					const hex = RGBToHex(rgb);
+					const result = ntc.name(hex)[3].toString().toLowerCase();
+
+					return axios
+								.get(`https://api.unsplash.com/search/photos/?query=landscape&color=${result}&orientation=landscape&per_page=10&collections=j21FBkp0aoQ&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4`)
+								.then(data => {
+									console.log(data);
+									console.log(data.data.results[Math.round((Math.random() * data.data.results.length - 1))]);
+									console.log(data.data.results.length)
+
+									sbst({
+										backgroundImage: data.data.results[Math.round((Math.random() * data.data.results.length - 1))]
+									})
+
+									sbs({
+										backgroundImage: `url(${data.data.results[Math.round((Math.random() * data.data.results.length - 1))].urls.full})`
+									});
+
+									return data.data.results[Math.round((Math.random() * data.data.results.length - 1))]
+								})
+						
+			}
+		})());
+	}, [, documentSettings])
+		
+	// TASK: IMPLEMENT BACKGROUNDS
+	// SO THAT THE USER CAN CHOOSE BETWEEN:
+
+	// - STATIC WALLPAPER (UPLOADED AND SAVED AS IMAGE BLOB)
+	// - DYNAMIC WALLPAPER (CUSTOM FROM PRESET THEME OR DYNAMIC RANDOM FROM UNSPLASH API)
+	// - COLOR WALLPAPER (STATIC COLOR OR FROM UNSPLASH API)
+
+	// (documentSettings.settings.backgroundType.value == "chaos") ?
+				// { 	
+				// 	background: 'rgb(0, 0, 0)',
+				// 	backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
+				// 	backgroundColor: '#000',
+				// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+				// }
+				// :
+				// {
+				// 	backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
+				// 	backgroundRepeat: 'no-repeat', 
+				// 	backgroundSize: 'cover',
+				// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+				// }
+
+	// console.log({
+	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+	// 	...backgroundStyle?.then(e => e)
+	// });
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
-			<div className={styles.container} style={
-				(documentSettings.settings.backgroundType.value == "chaos") ?
-				{ 	
-					background: 'rgb(0, 0, 0)',
-					backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
-					backgroundColor: '#000',
-					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
-				}
-				:
+			<div className={styles.container} style={{
+				...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+				...(backgroundStyle?.urls ? backgroundStyle : { backgroundColor: 'rgb(var(--wallpaper-color))' })
+			}}>
 				{
-					backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
-					backgroundRepeat: 'no-repeat', 
-					backgroundSize: 'cover',
-					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+					backgroundStats && backgroundStyle.urls ? 
+					<Blurhash
+						hash={backgroundStats.blur_hash}
+						width={400}
+						height={300}
+						resolutionX={32}
+						resolutionY={32}
+						punch={1}
+						/>
+					:
+					<></>
 				}
-			}>
-
+				
 				<Head>
 					<title>New Tab</title>
 					<link rel="icon" href="/favicon.ico" />	
@@ -523,7 +600,7 @@ export default function Home() {
 						documentSettings.settings.backgroundType.value == 'standard' ?
 						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
 							<p>Photo by</p>
-							<a href={`https://unsplash.com/@${background?.user?.username}`}>{background?.user?.name} {background?.user?.lastName}</a>
+							<a href={`https://unsplash.com/@${backgroundStats?.backgroundImage?.user?.username}`}>{backgroundStats?.backgroundImage?.user?.name} {backgroundStats?.backgroundImage?.user?.lastName}</a>
 						</h6>
 						:
 						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>

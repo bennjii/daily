@@ -32,6 +32,43 @@ export default function Theme(props) {
             <p>Customise daily to your liking!</p>
             <br />
 
+            <div className={styles.searchEngine}>
+                <h4>Background Type</h4>
+
+                <div>
+                    <div 
+                        className={documentSettings.settings.backgroundImage.value == 'static' ? styles.activePannel : undefined} 
+                        onClick={() => {
+                            documentSettings.settings.backgroundImage.value = 'static';
+                            callback(documentSettings);
+                        }}
+                    >
+                        Static
+                    </div>
+
+                    <div 
+                        className={documentSettings.settings.backgroundImage.value == 'dynamic'  ? styles.activePannel : undefined} 
+                        onClick={() => {
+                            documentSettings.settings.backgroundImage.value = 'dynamic'; 
+                            callback(documentSettings);
+                        }}
+                    >
+                        Dynamic
+                    </div>
+
+                    <div 
+                        className={documentSettings.settings.backgroundImage.value == 'color'  ? styles.activePannel : undefined} 
+                        onClick={() => {
+                            documentSettings.settings.backgroundImage.value = 'color';
+                            callback(documentSettings);
+                        }}
+                    >
+                        Color
+                    </div>
+                </div>
+            </div>
+
+            <h4>Themes</h4>
             <div className={styles.themeList}>
                 {
                     theme_list.map(theme => {
@@ -39,7 +76,6 @@ export default function Theme(props) {
                             <div 
                                 key={`THEME-${theme.name}`}
                                 className={`${styles.themeIcon}`} 
-                                //@ts-expect-error
                                 style={{ ...theme.colors }}
                                 onClick={() => {
                                     callback({
@@ -74,7 +110,7 @@ export default function Theme(props) {
                 }
             </div>
 
-            <h4>custom</h4>
+            <h4>Custom</h4>
 
             <div className={styles.custom + " " + (documentSettings.settings.theme.value == "custom" ? styles.customActive : styles.customDeactivated)}>
                 <div>

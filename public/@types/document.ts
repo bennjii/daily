@@ -13,8 +13,9 @@ export type Document = {
         hour24: Prefrence & {value: boolean},
         shortDate: Prefrence & {value: boolean},
         quoteOfTheDay: Prefrence & {value: boolean},
+        backgroundImage: Prefrence & {value: "static" | "color" | "dynamic"}
         backgroundType: Prefrence & {value: "standard" | "chaos" | "custom"},  //standard, chaos, custom
-        firstTime: Prefrence & {value: boolean}
+        firstTime: Prefrence & {value: boolean},
     },
     powertools: {
         search_engine: "duckduckgo" | "google" | "escosia",

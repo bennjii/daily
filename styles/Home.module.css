@@ -17,6 +17,10 @@
   --background-color: #eeebe2;
   --clock-color: #fff;
   --approval-color: #226d38;
+
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .custom { 
@@ -41,11 +45,16 @@
 
 .themeList {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 200px);
+  grid-template-columns: repeat(4, 1fr);
   width: 100%;
   gap: 1rem;
 
   margin-bottom: 3rem;
+}
+
+.custom {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .themeIcon {
@@ -581,6 +590,10 @@
   padding: .3rem;
 
   width: 80%;
+  height: 80%;
+
+  overflow-y: scroll;
+  overflow-x: visible;
 
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 3px;
