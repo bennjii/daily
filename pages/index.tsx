@@ -26,6 +26,13 @@ import { RGBToHex } from '@root/out/@types/themes'
 import { ntc } from '@components/ntc'
 import { Blurhash } from "react-blurhash";
 
+import fetch from 'node-fetch';
+global.fetch = fetch;
+
+import { createApi } from 'unsplash-js'
+
+const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
+
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
 	const [ background, setBackground ] = useState(null);
@@ -115,7 +122,7 @@ export default function Home() {
 					type: "list[standard, chaos]"
 				},  //standard, chaos, custom
 				backgroundImage: {
-					value: "color",
+					value: "dynamic",
 					desc: "Changes the background image for standard and custom",
 					type: "invisible"
 				}
@@ -271,39 +278,67 @@ export default function Home() {
 
 	useEffect(() => {
 		console.log("Background Image Changed.");
+		
+		switch(documentSettings.settings.backgroundImage.value) {
+			case "color":
+				sbs({ 
+					backgroundColor: 'rgb(var(--wallpaper-color))'
+				});
+				break;
+			case "dynamic":
+				//fetch
+				const rgb = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors["--wallpaper-color"];
+				const hex = RGBToHex(rgb);
+				const result = ntc.name(hex)[3].toString().toLowerCase();
 
-		sbs((async () => {
-			switch(documentSettings.settings.backgroundImage.value) {
-				case "color":
-					return { 
-							backgroundColor: 'rgb(var(--wallpaper-color))'
-						}
-				case "dynamic":
-					//fetch
-					const rgb = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors["--wallpaper-color"];
-					const hex = RGBToHex(rgb);
-					const result = ntc.name(hex)[3].toString().toLowerCase();
+				// unSPLASH.search.getPhotos({
+				// 	query: "a",
+				// 	page: 1,
+				// 	perPage: 5,
+				// 	color: result,
+				// 	collectionIds: ["j21FBkp0aoQ"]
+				// }).then(e => {
+				// 	console.log(e.response)
+				// })
 
-					return axios
-								.get(`https://api.unsplash.com/search/photos/?query=landscape&color=${result}&orientation=landscape&per_page=10&collections=j21FBkp0aoQ&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4`)
-								.then(data => {
-									console.log(data);
-									console.log(data.data.results[Math.round((Math.random() * data.data.results.length - 1))]);
-									console.log(data.data.results.length)
+				const images = JSON.parse(localStorage.getItem('dynamic-images'));
 
-									sbst({
-										backgroundImage: data.data.results[Math.round((Math.random() * data.data.results.length - 1))]
-									})
+				const backgrounds = images.results.filter(e => {
+					const bg_color = ntc.name(e.color)[3].toString().toLowerCase();
 
-									sbs({
-										backgroundImage: `url(${data.data.results[Math.round((Math.random() * data.data.results.length - 1))].urls.full})`
-									});
+					console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)}`, `color: ${e.color}`);
 
-									return data.data.results[Math.round((Math.random() * data.data.results.length - 1))]
-								})
-						
-			}
-		})());
+					console.log("BG: ", e, " COMPUTE: ", bg_color);
+					return bg_color == result;
+				});
+
+				const random_index = Math.floor(Math.random() * backgrounds.length);
+				console.log(backgrounds)
+
+				if(random_index) {
+					sbst(backgrounds[random_index]);
+					sbs({ backgroundImage: `url(${backgrounds[random_index].urls.full})` });
+				}
+				
+				break;
+
+				// return axios
+				// 			.get(`https://api.unsplash.com/search/photos/?query=landscape&color=${result}&orientation=landscape&per_page=10&collections=j21FBkp0aoQ&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4`)
+				// 			.then(data => {
+				// 				console.log(data);
+				// 				console.log(data.data.results[Math.round((Math.random() * data.data.results.length - 1))]);
+				// 				console.log(data.data.results.length)
+
+				// 				sbst({
+				// 					backgroundImage: data.data.results[Math.round((Math.random() * (data.data.results.length - 1)))]
+				// 				})
+
+				// 				sbs({
+				// 					backgroundImage: `url(${data.data.results[Math.round((Math.random() * (data.data.results.length - 1)))].urls.regular})`
+				// 				});
+				// 			})
+					
+		}
 	}, [, documentSettings])
 		
 	// TASK: IMPLEMENT BACKGROUNDS
@@ -337,21 +372,24 @@ export default function Home() {
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
 			<div className={styles.container} style={{
 				...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
-				...(backgroundStyle?.urls ? backgroundStyle : { backgroundColor: 'rgb(var(--wallpaper-color))' })
+				...backgroundStyle
 			}}>
-				{
-					backgroundStats && backgroundStyle.urls ? 
-					<Blurhash
-						hash={backgroundStats.blur_hash}
-						width={400}
-						height={300}
-						resolutionX={32}
-						resolutionY={32}
-						punch={1}
-						/>
+				{/* {
+					backgroundStats?.backgroundImage ? 
+					<div className={styles.backgroundBlur}>
+						<Blurhash
+							hash={backgroundStats.backgroundImage.blur_hash}
+							width={window.innerWidth}
+							height={window.innerHeight}
+							resolutionX={64}
+							resolutionY={64}
+							punch={1}
+							/>
+					</div>
+					
 					:
 					<></>
-				}
+				} */}
 				
 				<Head>
 					<title>New Tab</title>
@@ -600,7 +638,7 @@ export default function Home() {
 						documentSettings.settings.backgroundType.value == 'standard' ?
 						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
 							<p>Photo by</p>
-							<a href={`https://unsplash.com/@${backgroundStats?.backgroundImage?.user?.username}`}>{backgroundStats?.backgroundImage?.user?.name} {backgroundStats?.backgroundImage?.user?.lastName}</a>
+							<a href={`https://unsplash.com/@${backgroundStats?.user?.username}`}>{backgroundStats?.user?.name} {backgroundStats?.user?.lastName}</a>
 						</h6>
 						:
 						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>

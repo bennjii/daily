@@ -13,9 +13,26 @@ import Bindings from './settings_bindings';
 import Prefrences from './settings_prefrences'
 import Welcome from './welcome';
 
+import { createApi } from 'unsplash-js'
+import { ntc } from './ntc';
+const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
+
 export default function FirstTime() {
     const [ activePannel, setActivePannel ] = useState('start'); // prefrences, bindings, accounts
     const { documentSettings, setDocumentSettings, userData } = useContext(DocumentContext);
+
+    useEffect(() => {
+        console.log("Performing First Time Settup and Optimisations...");
+
+        unSPLASH
+            .collections
+            .getPhotos({ 
+                collectionId: 'j21FBkp0aoQ',
+                perPage: 50
+            }).then(data => {
+                localStorage.setItem('dynamic-images', JSON.stringify(data.response));
+            })
+    }, [])
 
     useEffect(() => {
         if(activePannel == 'finish') {

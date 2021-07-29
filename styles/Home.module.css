@@ -18,9 +18,14 @@
   --clock-color: #fff;
   --approval-color: #226d38;
 
+  background-color: rgb(var(--wallpaper-color));
+
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+
+  z-index: 1;
+  position: relative;
 }
 
 .custom { 
@@ -41,6 +46,11 @@
 .customDeactivated {
   opacity: .1;
   pointer-events: none;
+}
+
+.backgroundBlur {
+  position: absolute;
+  z-index: 0;
 }
 
 .themeList {
