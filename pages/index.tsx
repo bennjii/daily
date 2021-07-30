@@ -53,15 +53,16 @@ export default function Home() {
 				.eq('id', session.user.id)
 				.then(usr => {
 					setUserData(usr.data[0]);
+					seekChanges();
 
-					supabase
-						.from('users')
-						.select('*')
-						.match({ id: session.user.id })
-						.then(e => {
-							setDocumentSettings(e.data[0].settings);
-							setTodo(e.data[0].todo ? e.data[0].todo : []);
-						})
+					// supabase
+					// 	.from('users')
+					// 	.select('*')
+					// 	.match({ id: session.user.id })
+					// 	.then(e => {
+					// 		setDocumentSettings(e.data[0].settings);
+					// 		setTodo(e.data[0].todo ? e.data[0].todo : []);
+					// 	})
 				})
 		});
 	}, [])
