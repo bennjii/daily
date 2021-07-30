@@ -21,7 +21,7 @@ import FirstTime from '@components/first_time'
 import { supabase } from '@root/client'
 
 import { getThemeColor, loadTheme, theme_list } from '@public/@types/themes'
-import { RGBToHex } from '@root/out/@types/themes'
+import { RGBToHex } from '@public/@types/themes'
 
 import { ntc } from '@components/ntc'
 import { Blurhash } from "react-blurhash";
@@ -52,7 +52,16 @@ export default function Home() {
 				.select('*')
 				.eq('id', session.user.id)
 				.then(usr => {
-					setUserData(usr.data[0])
+					setUserData(usr.data[0]);
+
+					supabase
+						.from('users')
+						.select('*')
+						.match({ id: session.user.id })
+						.then(e => {
+							setDocumentSettings(e.data[0].settings);
+							setTodo(e.data[0].todo ? e.data[0].todo : []);
+						})
 				})
 		});
 	}, [])
@@ -265,12 +274,78 @@ export default function Home() {
 
 	useEffect(() => {
 		localStorage.setItem("settings", JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v));
+
+		if(supabase.auth.user()?.aud == 'authenticated')
+			saveSettings()
 	}, [documentSettings])
+
+	const saveSettings = () => {
+		supabase
+				.from('users')
+				.update({
+					settings: documentSettings,
+					last_changed: new Date()
+				})
+				.match({
+					id: supabase.auth.user().id
+				})
+				.then(e => {
+					console.log("Saving Settings", e)
+					if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+				})
+	}
+
+	const saveTodo = () => {
+		supabase
+			.from('users')
+			.update({
+				todo: todo,
+				last_changed: new Date()
+			})
+			.match({
+				id: supabase.auth.user().id
+			})
+			.then(e => {
+				console.log("Saving Todo", e)
+				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+			})
+	}
+
+	const seekChanges = () => {
+		if(supabase.auth.user()?.aud == 'authenticated')
+			supabase
+				.from('users')
+				.select('*')
+				.match({ id: supabase.auth.user().id })
+				.then(e => {
+					const last_changed_ = JSON.parse(localStorage.getItem("last-changed"));
+
+					console.log(`${new Date(last_changed_).getTime()} compared with ${new Date(e.data[0].last_changed).getTime()}`);
+
+					if(new Date(last_changed_).getTime() - new Date(e.data[0].last_changed).getTime() < 0 || !last_changed_) {
+						// Time has passed (out of date, please update)
+						console.log("OUT OF DATE ~ UPDATING INFORMATION...");
+
+						console.log(e.data[0].todo);
+
+						setTodo(e.data[0].todo);
+						setDocumentSettings(e.data[0].settings);
+
+						localStorage.setItem("todo", JSON.stringify(e.data[0].todo));
+					}else {
+						console.log("UP TO DATE")
+						// on the latest version, probably should reciprocate information to the server if not matching...
+						// saveTodo();
+						// saveSettings();
+					}
+				});
+	}
 
 	useEffect(() => {
 		console.log('Loading Theme', documentSettings.settings.theme);
 
-		loadTheme(documentSettings.settings.theme.value)
+		loadTheme(documentSettings.settings.theme.value);
+		seekChanges();
 	}, []);
 
 	const [ backgroundStyle, sbs ] = useState(null);
@@ -286,6 +361,7 @@ export default function Home() {
 				});
 				break;
 			case "dynamic":
+				if(backgroundStyle?.backgroundImage) return;
 				//fetch
 				const rgb = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors["--wallpaper-color"];
 				const hex = RGBToHex(rgb);
@@ -303,21 +379,22 @@ export default function Home() {
 
 				const images = JSON.parse(localStorage.getItem('dynamic-images'));
 
-				const backgrounds = images.results.filter(e => {
+				const backgrounds = images?.results?.filter(e => {
 					const bg_color = ntc.name(e.color)[3].toString().toLowerCase();
 
-					console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)}`, `color: ${e.color}`);
-
-					console.log("BG: ", e, " COMPUTE: ", bg_color);
+					// console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)}`, `color: ${e.color}`);
+					// console.log("BG: ", e, " COMPUTE: ", bg_color);
 					return bg_color == result;
 				});
 
-				const random_index = Math.floor(Math.random() * backgrounds.length);
-				console.log(backgrounds)
+				if(backgrounds) {
+					const random_index = Math.floor(Math.random() * backgrounds.length);
+					console.log(backgrounds)
 
-				if(random_index) {
-					sbst(backgrounds[random_index]);
-					sbs({ backgroundImage: `url(${backgrounds[random_index].urls.full})` });
+					if(random_index) {
+						sbst(backgrounds[random_index]);
+						sbs({ backgroundImage: `url(${backgrounds[random_index].urls.full})` });
+					}
 				}
 				
 				break;
@@ -340,33 +417,21 @@ export default function Home() {
 					
 		}
 	}, [, documentSettings])
-		
-	// TASK: IMPLEMENT BACKGROUNDS
-	// SO THAT THE USER CAN CHOOSE BETWEEN:
-
-	// - STATIC WALLPAPER (UPLOADED AND SAVED AS IMAGE BLOB)
-	// - DYNAMIC WALLPAPER (CUSTOM FROM PRESET THEME OR DYNAMIC RANDOM FROM UNSPLASH API)
-	// - COLOR WALLPAPER (STATIC COLOR OR FROM UNSPLASH API)
 
 	// (documentSettings.settings.backgroundType.value == "chaos") ?
-				// { 	
-				// 	background: 'rgb(0, 0, 0)',
-				// 	backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
-				// 	backgroundColor: '#000',
-				// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
-				// }
-				// :
-				// {
-				// 	backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
-				// 	backgroundRepeat: 'no-repeat', 
-				// 	backgroundSize: 'cover',
-				// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
-				// }
-
-	// console.log({
-	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
-	// 	...backgroundStyle?.then(e => e)
-	// });
+	// { 	
+	// 	background: 'rgb(0, 0, 0)',
+	// 	backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
+	// 	backgroundColor: '#000',
+	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+	// }
+	// :
+	// {
+	// 	backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
+	// 	backgroundRepeat: 'no-repeat', 
+	// 	backgroundSize: 'cover',
+	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
+	// }
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
@@ -509,6 +574,7 @@ export default function Home() {
 									})
 
 									localStorage.setItem("todo", JSON.stringify(todo));
+									saveTodo();
 								}}/>
 							</div>
 							<div className={styles.todoBody}>
@@ -518,8 +584,9 @@ export default function Home() {
 											<div key={`TODO${index}`} onClick={(e) => {
 													//@ts-ignore
 													if(e.target.nodeName == "DIV") {
-													todo[index].completed = !todo[index].completed;
-													localStorage.setItem("todo", JSON.stringify(todo));
+														todo[index].completed = !todo[index].completed;
+														localStorage.setItem("todo", JSON.stringify(todo));
+														saveTodo();
 													}
 												}}>
 
@@ -543,6 +610,7 @@ export default function Home() {
 															}
 
 															localStorage.setItem("todo", JSON.stringify(todo));
+															saveTodo();
 														}
 													}} autoFocus/>
 												</div>
@@ -568,11 +636,13 @@ export default function Home() {
 														<Check color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20}  onClick={(e) => {
 															todo[index].completed = false;
 															localStorage.setItem("todo", JSON.stringify(todo));
+															saveTodo();
 														}}/>
 														:
 														<Square color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
 															todo[index].completed = true;
 															localStorage.setItem("todo", JSON.stringify(todo));
+															saveTodo();
 														}}/>
 													}
 													</div>
@@ -580,6 +650,7 @@ export default function Home() {
 													<Trash color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
 														todo.splice(index, 1);
 														localStorage.setItem("todo", JSON.stringify(todo));
+														saveTodo();
 													}} onMouseOver={(e) => {
 														//@ts-expect-error
 														if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {
@@ -632,21 +703,27 @@ export default function Home() {
 					:
 					<></>
 				}
+
+				{
+					documentSettings.settings.backgroundImage.value == 'dynamic' ?
+					<div className={styles.photoCredit}>
+						{
+							documentSettings.settings.backgroundType.value == 'standard' ?
+							<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
+								<p>Photo by</p>
+								<a href={`https://unsplash.com/@${backgroundStats?.user?.username}`}>{backgroundStats?.user?.name} {backgroundStats?.user?.lastName}</a>
+							</h6>
+							:
+							<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
+								<p>Lorenz Chaos Attractor</p>
+							</h6>
+						}
+					</div>
+					:	
+					<></>
+				}
 			
-				<div className={styles.photoCredit}>
-					{
-						documentSettings.settings.backgroundType.value == 'standard' ?
-						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
-							<p>Photo by</p>
-							<a href={`https://unsplash.com/@${backgroundStats?.user?.username}`}>{backgroundStats?.user?.name} {backgroundStats?.user?.lastName}</a>
-						</h6>
-						:
-						<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
-							<p>Lorenz Chaos Attractor</p>
-						</h6>
-					}
-					
-				</div>
+				
 			</div>
 		</DocumentContext.Provider>
 	)
