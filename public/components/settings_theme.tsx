@@ -68,6 +68,16 @@ export default function Theme(props) {
                 </div>
             </div>
 
+            {
+                documentSettings.settings.backgroundImage.value == 'static' ? 
+                <div>
+                    <h4>Image</h4>
+                    <input type="file" />
+                </div> 
+                :
+                <></>
+            }
+
             <h4>Themes</h4>
             <div className={styles.themeList}>
                 {

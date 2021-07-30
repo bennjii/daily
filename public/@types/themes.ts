@@ -10,7 +10,7 @@ process.browser ?
                 ["--primary-color"]: "59, 59, 59",
                 ["--complementary-color"]: "255, 255, 255",
                 ["--background-color"]: "238, 235, 226",
-                ["--wallpaper-color"]: "59, 59, 59",
+                ["--wallpaper-color"]: "63, 60, 51",
                 ["--clock-color"]: "255, 255, 255",
                 ["--approval-color"]: "34, 109, 56"
             }

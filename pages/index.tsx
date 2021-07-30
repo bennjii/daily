@@ -145,8 +145,6 @@ export default function Home() {
 						bind: 's',
 						desc: 'Uses the selected search engine to perform standard internet search',
 						action: (string) => {
-							console.log(documentSettings.powertools.search_engine);
-
 							switch(documentSettings.powertools.search_engine) {
 								case "duckduckgo": 
 									window.location.replace(`https://duckduckgo.com/?q=${string}`)
@@ -177,8 +175,6 @@ export default function Home() {
 						bind: 't',
 						desc: 'Add a task to the TODO list without lifting the mouse',
 						action: (string) => {
-							console.log(`Recieved:: ${string}`);
-		
 							todo.push({
 								editable: false,
 								title: string,
@@ -186,6 +182,7 @@ export default function Home() {
 							});
 		
 							localStorage.setItem("todo", JSON.stringify(todo));
+							saveTodo();
 						}
 					},
 					{
@@ -203,15 +200,12 @@ export default function Home() {
 
 	useEffect(() => {
 		if(!process.browser) return;
-		console.log("Updated!")
-		
+
 		//@ts-expect-error
 		const listener = new createListener();
 		listener.setMonitor(true);
 
 		const escape = listener.subscribe('Escape', () => {
-			console.log("ESCAPEEE");
-
 			if(documentSettings.states.searchOpen) {
 				documentSettings.states.searchOpen = false;
 				setDocumentSettings(documentSettings);
@@ -229,15 +223,15 @@ export default function Home() {
 		const resetState = listener.subscribe('Shift+Down', () => {
 			setDocumentSettings(null);
 			localStorage.removeItem("settings");
-			supabase.auth.signOut();
+			localStorage.removeItem("todo");
+			localStorage.removeItem("dynamic-images");
 
+			supabase.auth.signOut();
 			window.location.reload();
 		});
 
 		documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
 			listener.subscribe(`Shift+key${powerbind.bind}`, () => {
-				console.log(documentSettings.states);
-
 				setDocumentSettings({ 
 					...documentSettings, 
 					states: { 
@@ -255,8 +249,7 @@ export default function Home() {
   	}, [, documentSettings.powertools.powerbinds]);
 
 	useEffect(() => {
-		console.log("Component Started");
-		console.log(documentSettings);
+		console.log("[SYSTEM]:\t Component Started");
 
 		const repeat = () => {
 			setDate(new Date());
@@ -264,13 +257,6 @@ export default function Home() {
 		}
 
 		setTimeout(repeat, 100);
-
-		// (async () => {
-		// 	// api.unsplash.com/photo/_8zfgT9kS2g&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4 - Single Photo (1538150) (1368747 - TXTURES) (1041983 - BG's)
-		// 	// https://api.unsplash.com/photos/random/?collections=1368747&count=1&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4
-		// 	setBackground((await axios.get('https://api.unsplash.com/photos/aQcE3gDSSTY?client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4')).data);
-		// 	documentSettings.settings.quoteOfTheDay.value ?? setQuoteOfTheDay((await (await axios.get('http://quotes.rest/qod.json')).data));
-		// })();
 	}, []);
 
 	useEffect(() => {
@@ -291,7 +277,7 @@ export default function Home() {
 					id: supabase.auth.user().id
 				})
 				.then(e => {
-					console.log("Saving Settings", e)
+					console.log("[AUTO-SAVE]: Saving Settings", e)
 					if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
 				})
 	}
@@ -307,7 +293,7 @@ export default function Home() {
 				id: supabase.auth.user().id
 			})
 			.then(e => {
-				console.log("Saving Todo", e)
+				console.log("[AUTO-SAVE]: Saving Todo", e)
 				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
 			})
 	}
@@ -321,21 +307,17 @@ export default function Home() {
 				.then(e => {
 					const last_changed_ = JSON.parse(localStorage.getItem("last-changed"));
 
-					console.log(`${new Date(last_changed_).getTime()} compared with ${new Date(e.data[0].last_changed).getTime()}`);
-
 					if(new Date(last_changed_).getTime() - new Date(e.data[0].last_changed).getTime() < 0 || !last_changed_) {
 						// Time has passed (out of date, please update)
-						console.log("OUT OF DATE ~ UPDATING INFORMATION...");
-
-						console.log(e.data[0].todo);
+						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
 
 						setTodo(e.data[0].todo);
 						setDocumentSettings(e.data[0].settings);
 
 						localStorage.setItem("todo", JSON.stringify(e.data[0].todo));
 					}else {
-						console.log("UP TO DATE")
-						// on the latest version, probably should reciprocate information to the server if not matching...
+						console.log("[SEEK]:\t\t UP TO DATE")
+						// On the latest version, probably should reciprocate information to the server if not matching...
 						// saveTodo();
 						// saveSettings();
 					}
@@ -343,7 +325,7 @@ export default function Home() {
 	}
 
 	useEffect(() => {
-		console.log('Loading Theme', documentSettings.settings.theme);
+		console.log('[THEME]:\t Loading Theme', documentSettings.settings.theme);
 
 		loadTheme(documentSettings.settings.theme.value);
 		seekChanges();
@@ -353,7 +335,7 @@ export default function Home() {
 	const [ backgroundStats, sbst ] = useState(null);
 
 	useEffect(() => {
-		console.log("Background Image Changed.");
+		console.log(`[THEME]:\t Background Image Changed ${documentSettings.settings.backgroundImage.value}`);
 		
 		switch(documentSettings.settings.backgroundImage.value) {
 			case "color":
@@ -362,77 +344,42 @@ export default function Home() {
 				});
 				break;
 			case "dynamic":
-				if(backgroundStyle?.backgroundImage) return;
 				//fetch
 				const rgb = theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors["--wallpaper-color"];
 				const hex = RGBToHex(rgb);
 				const result = ntc.name(hex)[3].toString().toLowerCase();
 
-				// unSPLASH.search.getPhotos({
-				// 	query: "a",
-				// 	page: 1,
-				// 	perPage: 5,
-				// 	color: result,
-				// 	collectionIds: ["j21FBkp0aoQ"]
-				// }).then(e => {
-				// 	console.log(e.response)
-				// })
+				if(backgroundStyle?.backgroundImage) {
+					if(ntc.name(backgroundStats.color)[3] == result) return;
+				}
 
 				const images = JSON.parse(localStorage.getItem('dynamic-images'));
 
 				const backgrounds = images?.results?.filter(e => {
 					const bg_color = ntc.name(e.color)[3].toString().toLowerCase();
 
-					// console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)}`, `color: ${e.color}`);
-					// console.log("BG: ", e, " COMPUTE: ", bg_color);
+					// console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)} color: ${e.color} name: ${e.description}`, `color: ${e.color}`);
 					return bg_color == result;
 				});
 
+				
+
 				if(backgrounds) {
 					const random_index = Math.floor(Math.random() * backgrounds.length);
-					console.log(backgrounds)
+					console.log(`[THEME]:\t Background Search Filtered for ${result}::${random_index}`, backgrounds[random_index]);
 
-					if(random_index) {
+					if(backgrounds[random_index]) {
 						sbst(backgrounds[random_index]);
 						sbs({ backgroundImage: `url(${backgrounds[random_index].urls.full})` });
 					}
 				}
 				
 				break;
-
-				// return axios
-				// 			.get(`https://api.unsplash.com/search/photos/?query=landscape&color=${result}&orientation=landscape&per_page=10&collections=j21FBkp0aoQ&client_id=XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4`)
-				// 			.then(data => {
-				// 				console.log(data);
-				// 				console.log(data.data.results[Math.round((Math.random() * data.data.results.length - 1))]);
-				// 				console.log(data.data.results.length)
-
-				// 				sbst({
-				// 					backgroundImage: data.data.results[Math.round((Math.random() * (data.data.results.length - 1)))]
-				// 				})
-
-				// 				sbs({
-				// 					backgroundImage: `url(${data.data.results[Math.round((Math.random() * (data.data.results.length - 1)))].urls.regular})`
-				// 				});
-				// 			})
+			case "static":
+				break;
 					
 		}
 	}, [, documentSettings])
-
-	// (documentSettings.settings.backgroundType.value == "chaos") ?
-	// { 	
-	// 	background: 'rgb(0, 0, 0)',
-	// 	backgroundImage: 'url(https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.ytimg.com%2Fvi%2F8voDgUhskLo%2Fmaxresdefault.jpg&f=1&nofb=1)',
-	// 	backgroundColor: '#000',
-	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
-	// }
-	// :
-	// {
-	// 	backgroundImage: `url(${background?.urls?.raw ? background.urls.raw : 'https://images.unsplash.com/photo-1617642171314-276bb7641536?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1700&q=80'})`, 
-	// 	backgroundRepeat: 'no-repeat', 
-	// 	backgroundSize: 'cover',
-	// 	...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors
-	// }
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
@@ -509,7 +456,6 @@ export default function Home() {
 				{
 					documentSettings.states.searchOpen ?
 					<div className={`${styles.search} ${styles.searchActive}`} onClick={(e) => {
-						console.log(e.target)
 						//@ts-expect-error
 						if(e.target.classList.value.includes(styles.search)) setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false }})
 					}}>
@@ -520,7 +466,7 @@ export default function Home() {
 									<p>New Task</p>
 								</div>
 							</div> */}
-							<div id={"search"} className={styles.searchDiv} onClick={() => {console.log("Event Sucked.")}}>
+							<div id={"search"} className={styles.searchDiv}>
 								<input placeholder={`${/* ↑ */"/"}${documentSettings.states.onSearchCompletion?.bind}\t${documentSettings.states.onSearchCompletion?.title}`} ref={searchRef} autoFocus onKeyDown={(event) => {
 									if(event.key.toLocaleLowerCase() == "escape") {
 										setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false }})
