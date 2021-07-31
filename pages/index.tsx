@@ -225,6 +225,7 @@ export default function Home() {
 			localStorage.removeItem("settings");
 			localStorage.removeItem("todo");
 			localStorage.removeItem("dynamic-images");
+			localStorage.removeItem("last-changed");
 
 			supabase.auth.signOut();
 			window.location.reload();
@@ -246,7 +247,7 @@ export default function Home() {
 		return () => {
 			listener.stopListening();
 		}
-  	}, [, documentSettings.powertools.powerbinds]);
+  	}, [, documentSettings?.powertools?.powerbinds]);
 
 	useEffect(() => {
 		console.log("[SYSTEM]:\t Component Started");
@@ -305,6 +306,8 @@ export default function Home() {
 				.select('*')
 				.match({ id: supabase.auth.user().id })
 				.then(e => {
+					if(!e.data[0]) return;
+
 					const last_changed_ = JSON.parse(localStorage.getItem("last-changed"));
 
 					if(new Date(last_changed_).getTime() - new Date(e.data[0].last_changed).getTime() < 0 || !last_changed_) {
@@ -350,7 +353,8 @@ export default function Home() {
 				const result = ntc.name(hex)[3].toString().toLowerCase();
 
 				if(backgroundStyle?.backgroundImage) {
-					if(ntc.name(backgroundStats.color)[3] == result) return;
+					console.log(ntc.name(backgroundStats.color))
+					if(ntc.name(backgroundStats.color)[3].toString().toLowerCase() == result) return;
 				}
 
 				const images = JSON.parse(localStorage.getItem('dynamic-images'));
@@ -358,7 +362,7 @@ export default function Home() {
 				const backgrounds = images?.results?.filter(e => {
 					const bg_color = ntc.name(e.color)[3].toString().toLowerCase();
 
-					// console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)} color: ${e.color} name: ${e.description}`, `color: ${e.color}`);
+					console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)} color: ${e.color} name: ${e.description}`, `color: ${e.color}`);
 					return bg_color == result;
 				});
 
@@ -383,10 +387,15 @@ export default function Home() {
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
-			<div className={styles.container} style={{
-				...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
-				...backgroundStyle
-			}}>
+			<div className={styles.container} style={
+				documentSettings ? 
+				{
+					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+					...backgroundStyle
+				}
+				:
+				{}
+			}>
 				{/* {
 					backgroundStats?.backgroundImage ? 
 					<div className={styles.backgroundBlur}>
@@ -526,7 +535,7 @@ export default function Home() {
 							</div>
 							<div className={styles.todoBody}>
 								{
-									todo.map((e, index) => {
+									todo?.map((e, index) => {
 										return (
 											<div key={`TODO${index}`} onClick={(e) => {
 													//@ts-ignore

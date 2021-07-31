@@ -2,7 +2,7 @@
 import { SupabaseClient } from '@supabase/supabase-js'
 import clientStyles from '../../styles/Home.module.css'
 import styles from '@styles/Auth.module.css'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import Button from '@components/button'
 import Input from '@components/input'
@@ -10,6 +10,7 @@ import { callbackify } from 'util'
 
 import { AlertCircle, Check } from 'react-feather';
 import { useEffect } from 'react'
+import { DocumentContext } from '@public/@types/document_context'
 
 const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
     const [ authState, setAuthState ] = useState('auth-signup');
@@ -18,6 +19,8 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
         password: "",
         username: ""
     });
+
+    const { documentSettings } = useContext(DocumentContext);
 
     const [ authError, setAuthError ] = useState("");
 
@@ -98,7 +101,8 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                                             client.from('users').insert([
                                                 {
                                                     id: u.user.id,
-                                                    username: authInputState.username
+                                                    username: authInputState.username,
+                                                    settings: documentSettings
                                                 }
                                             ]).then(e => {
                                                 callback();

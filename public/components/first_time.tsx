@@ -21,6 +21,8 @@ export default function FirstTime() {
     const [ activePannel, setActivePannel ] = useState('start'); // prefrences, bindings, accounts
     const { documentSettings, setDocumentSettings, userData } = useContext(DocumentContext);
 
+    const [ loaded, setLoaded ] = useState(false);
+
     useEffect(() => {
         console.log("Performing First Time Settup and Optimisations...");
 
@@ -31,6 +33,7 @@ export default function FirstTime() {
                 perPage: 50
             }).then(data => {
                 localStorage.setItem('dynamic-images', JSON.stringify(data.response));
+                setLoaded(true);
             })
     }, [])
 
@@ -39,7 +42,7 @@ export default function FirstTime() {
             documentSettings.settings.firstTime.value = false;
             setDocumentSettings(documentSettings);
 
-            console.log(documentSettings);
+            console.log(`[SYSTEM]: \tFirst Time Settup Complete.`);
 
             localStorage.setItem("settings", JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v));
         }
@@ -50,6 +53,10 @@ export default function FirstTime() {
             setActivePannel('features')
         }
     }, [, userData])
+
+    useEffect(() => {
+        console.log("Optimised Content Loaded")
+    }, [loaded])
 
     return (
         <div>
@@ -77,7 +84,7 @@ export default function FirstTime() {
                             case "features":
                                 return <Features callback={setActivePannel}/>
                             case "all-set":
-                                return <AllSet callback={setActivePannel}/>
+                                return <AllSet callback={setActivePannel} activatable={loaded}/>
                             default: 
                                 return (
                                     <div>

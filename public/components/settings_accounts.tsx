@@ -44,7 +44,7 @@ export default function Accounts(props) {
                     </div>
                 </div>
 
-                <div className={styles.accountLink}>
+                {/* <div className={styles.accountLink}>
                     <p>spotify</p>
 
                     <p></p>
@@ -61,7 +61,7 @@ export default function Accounts(props) {
                             }
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
             
         </div>

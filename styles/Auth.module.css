@@ -174,7 +174,7 @@
 
     border-radius: 50%;
 
-    background-color: var(--primary-color);
+    background-color: rgb(var(--primary-color));
     display: flex;
     flex-direction: column;
 
