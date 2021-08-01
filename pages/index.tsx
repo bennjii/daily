@@ -159,7 +159,6 @@ export default function Home() {
 									window.location.replace(`https://duckduckgo.com/?q=${string}`)
 									break;
 							}
-							
 						}
 					},
 					{
@@ -200,6 +199,7 @@ export default function Home() {
 
 	useEffect(() => {
 		if(!process.browser) return;
+		console.log("[SYSTEM]:\tAssigning Powerbinds")
 
 		//@ts-expect-error
 		const listener = new createListener();
@@ -268,19 +268,21 @@ export default function Home() {
 	}, [documentSettings])
 
 	const saveSettings = () => {
+		console.log("[AUTO-SAVE]: Attempting to Save Settings", documentSettings);
+
 		supabase
-				.from('users')
-				.update({
-					settings: documentSettings,
-					last_changed: new Date()
-				})
-				.match({
-					id: supabase.auth.user().id
-				})
-				.then(e => {
-					console.log("[AUTO-SAVE]: Saving Settings", e)
-					if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
-				})
+			.from('users')
+			.update({
+				settings: JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v),
+				last_changed: new Date()
+			})
+			.match({
+				id: supabase.auth.user().id
+			})
+			.then(e => {
+				console.log("[AUTO-SAVE]: Saving Settings", e)
+				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+			})
 	}
 
 	const saveTodo = () => {
@@ -314,10 +316,27 @@ export default function Home() {
 						// Time has passed (out of date, please update)
 						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
 
-						setTodo(e.data[0].todo);
-						setDocumentSettings(e.data[0].settings);
+						setTodo(e.data[0].todo ? e.data[0].todo : []);
+						
+						setDocumentSettings({
+							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
+							states: {
+								editingTitle: false,
+								settingsOpen: false,
+								searchOpen: false
+							}
+						});
 
-						localStorage.setItem("todo", JSON.stringify(e.data[0].todo));
+						console.log("DOWNLOADED ",{
+							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
+							states: {
+								editingTitle: false,
+								settingsOpen: false,
+								searchOpen: false
+							}
+						});
+
+						localStorage.setItem("todo", JSON.stringify(e.data[0].todo ? e.data[0].todo : []));
 					}else {
 						console.log("[SEEK]:\t\t UP TO DATE")
 						// On the latest version, probably should reciprocate information to the server if not matching...
@@ -353,7 +372,7 @@ export default function Home() {
 				const result = ntc.name(hex)[3].toString().toLowerCase();
 
 				if(backgroundStyle?.backgroundImage) {
-					console.log(ntc.name(backgroundStats.color))
+					// console.log(ntc.name(backgroundStats.color))
 					if(ntc.name(backgroundStats.color)[3].toString().toLowerCase() == result) return;
 				}
 
@@ -362,11 +381,9 @@ export default function Home() {
 				const backgrounds = images?.results?.filter(e => {
 					const bg_color = ntc.name(e.color)[3].toString().toLowerCase();
 
-					console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)} color: ${e.color} name: ${e.description}`, `color: ${e.color}`);
+					// console.log(`%cIMAGE COLOUR ~ ${ntc.name(e.color)} color: ${e.color} name: ${e.description}`, `color: ${e.color}`);
 					return bg_color == result;
 				});
-
-				
 
 				if(backgrounds) {
 					const random_index = Math.floor(Math.random() * backgrounds.length);
@@ -388,6 +405,12 @@ export default function Home() {
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
 			<div className={styles.container} style={
+				documentSettings.settings.backgroundType.value == "chaos" ?
+				{
+					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+					backgroundColor: "#000"
+				}
+				:
 				documentSettings ? 
 				{
 					...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
@@ -457,7 +480,7 @@ export default function Home() {
 						<div>
 							<p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: (documentSettings.settings.shortDate.value) ? 'short' : 'long' }).toUpperCase()}</p>
 
-							<Settings color={"rgb(var(--clock-color))"} opacity={0.055} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
+							<Settings color={"rgb(var(--clock-color))"} opacity={0.45} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
 						</div>
 					</div>
 				</div>

@@ -42,6 +42,7 @@ export default function FirstTime() {
             documentSettings.settings.firstTime.value = false;
             setDocumentSettings(documentSettings);
 
+            console.log(documentSettings);
             console.log(`[SYSTEM]: \tFirst Time Settup Complete.`);
 
             localStorage.setItem("settings", JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v));

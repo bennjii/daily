@@ -52,14 +52,20 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                             }
 
                             <div>
-                                <Button title={"Login"} onClick={() => {
-                                    client.auth.signIn({
-                                        email: authInputState.email,
-                                        password: authInputState.password,
-                                    }).then(e => {
-                                        if(e.error) setAuthError(e.error.message)
-                                        else setAuthError(null)
-                                    })
+                                <Button title={"Login"} onClick={(_, callback) => {
+                                    if(authInputState.email && authInputState.password) {
+                                        client.auth.signIn({
+                                            email: authInputState.email,
+                                            password: authInputState.password,
+                                        }).then(e => {
+                                            if(e.error) setAuthError(e.error.message)
+                                            else setAuthError(null)
+
+                                            callback()
+                                        })
+                                    }else {
+                                        callback();
+                                    }
                                 }}/>
                                 <p>Don't have an account? <a href="#" onClick={() => setAuthState('auth-signup')}>Sign Up</a></p> 
                             </div>
@@ -91,7 +97,8 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                                             email: authInputState.email,
                                             password: authInputState.password,
                                         }).then(u => {
-                                            console.log(u.error)
+                                            console.log("[SYSTEM]:\tCreating account, settings:", documentSettings)
+
                                             if(u.error)  {
                                                 setAuthError(u.error?.message)
                                                 callback();
@@ -102,7 +109,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                                                 {
                                                     id: u.user.id,
                                                     username: authInputState.username,
-                                                    settings: documentSettings
+                                                    settings: JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v)
                                                 }
                                             ]).then(e => {
                                                 callback();
@@ -110,8 +117,11 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                                             });
                                         }).catch(e => {
                                             console.error(e)
-                                        })
-                                    }   
+                                            callback();
+                                        });
+                                    }else {
+                                        callback();
+                                    }
                                 }}/>
 
                                 <p>Already have an account? <a href="#" onClick={() => setAuthState('auth-login')}>Log in</a></p> 
