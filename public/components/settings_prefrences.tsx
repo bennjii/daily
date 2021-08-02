@@ -11,11 +11,11 @@ export default function Prefrences(props) {
 
     return (
         <div>
-            <h1>Prefrences</h1>
+            <h1>Preferences</h1>
             <p>Choose how to customise your tab</p>
             <br />
 
-            <h4>Avalible Prefrences</h4>
+            <h4>Avalible Preferences</h4>
 
             <div className={styles.prefrencesList}>
                 {

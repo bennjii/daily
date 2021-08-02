@@ -10,7 +10,7 @@ import Prefrences from './settings_prefrences'
 import Theme from './settings_theme';
 
 export default function SettingsPage() {
-    const [ activePannel, setActivePannel ] = useState('prefrences'); // prefrences, bindings, accounts
+    const [ activePannel, setActivePannel ] = useState('preferences'); // preferences, bindings, accounts
     const { documentSettings, setDocumentSettings, userData } = useContext(DocumentContext);
 
     return (
@@ -20,10 +20,10 @@ export default function SettingsPage() {
                 <div></div>
                 <div className={styles.settingsToggleList}>
                     <div 
-                        className={activePannel == 'prefrences' ? styles.settingsActivePannel : ''}
-                        onClick={() => setActivePannel('prefrences')}
+                        className={activePannel == 'preferences' ? styles.settingsActivePannel : ''}
+                        onClick={() => setActivePannel('preferences')}
                     >
-                        <ChevronsRight size={18} color={activePannel == 'prefrences' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"} />
+                        <ChevronsRight size={18} color={activePannel == 'preferences' ? "rgb(var(--complementary-color))" : "rgb(var(--primary-color))"} />
                     </div>
 
                     <div 
@@ -72,7 +72,7 @@ export default function SettingsPage() {
                 {
                     (() => {
                         switch(activePannel) {
-                            case "prefrences":
+                            case "preferences":
                                 return <Prefrences settings={documentSettings} callback={setDocumentSettings}/>
                             case "bindings":
                                 return <Bindings settings={documentSettings} callback={setDocumentSettings}/>

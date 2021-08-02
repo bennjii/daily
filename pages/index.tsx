@@ -36,7 +36,6 @@ const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSk
 export default function Home() {
 	const [ date, setDate ] = useState(new Date());
 	const [ background, setBackground ] = useState(null);
-	const [ quoteOfTheDay, setQuoteOfTheDay ] = useState(null);
 	const [ userData, setUserData ] = useState<User>(null);
 
 	const searchRef = useRef();
@@ -459,7 +458,7 @@ export default function Home() {
 						}
 						
 						{
-							(documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay qotd={quoteOfTheDay} color={color} />
+							(documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay color={color} />
 						}
 					</div>
 

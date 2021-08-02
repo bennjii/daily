@@ -1,1 +1,2 @@
 -   Powerbind Crashing (UseEffect Loop)
+-   Extention Signup Redirect

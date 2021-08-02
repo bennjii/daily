@@ -35,7 +35,7 @@ export default function Accounts(props) {
                             className={styles.authTrue}
                         >
                             {
-                                supabase.auth.user().aud == 'authenticated' ?
+                                supabase.auth.user()?.aud == 'authenticated' ?
                                 <Check size={18} color={"rgb(var(--complementary-color))"} />
                                 :
                                 <p>Link Account</p>

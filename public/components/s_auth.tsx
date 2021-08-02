@@ -79,7 +79,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
                             </div>
                             
                             <div className={styles.authInput}>
-                                <Input title={"EMAIL"} defaultValue={authInputState.email} type="email" onChange={(e) => setAuthInputState({ ...authInputState, email: e.target.value })}/>
+                                <Input title={"EMAIL"} defaultValue={authInputState.email} type="email" onChange={(e) => { setAuthInputState({ ...authInputState, email: e.target.value }); console.log(e); }}/>
                                 <br />
                                 <Input title={"USERNAME"} defaultValue={authInputState.username} type="text" onChange={(e) => setAuthInputState({ ...authInputState, username: e.target.value })}/>
                                 <br />
@@ -163,7 +163,7 @@ const SAuth: React.FC<{ client: SupabaseClient }> = ({ client }) => {
             <div className={styles.about}>
                 daily
 
-                <p>A daily account allows you to use integrations, sync settings and prefrences, and store information such as todo's and notes</p>
+                <p>A daily account allows you to use integrations, sync settings and preferences, and store information such as todo's and notes</p>
             </div>
         </div>
 	)
