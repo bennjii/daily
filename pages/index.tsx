@@ -47,23 +47,24 @@ export default function Home() {
 	
 	useEffect(() => {
 		supabase.auth.onAuthStateChange((event, session) => {
-			supabase
-				.from('users')
-				.select('*')
-				.eq('id', session.user.id)
-				.then(usr => {
-					setUserData(usr.data[0]);
-					seekChanges();
+			if(session.user.id)
+				supabase
+					.from('users')
+					.select('*')
+					.eq('id', session.user.id)
+					.then(usr => {
+						setUserData(usr.data[0]);
+						seekChanges();
 
-					// supabase
-					// 	.from('users')
-					// 	.select('*')
-					// 	.match({ id: session.user.id })
-					// 	.then(e => {
-					// 		setDocumentSettings(e.data[0].settings);
-					// 		setTodo(e.data[0].todo ? e.data[0].todo : []);
-					// 	})
-				})
+						// supabase
+						// 	.from('users')
+						// 	.select('*')
+						// 	.match({ id: session.user.id })
+						// 	.then(e => {
+						// 		setDocumentSettings(e.data[0].settings);
+						// 		setTodo(e.data[0].todo ? e.data[0].todo : []);
+						// 	})
+					})
 		});
 	}, [])
 
@@ -174,12 +175,15 @@ export default function Home() {
 						bind: 't',
 						desc: 'Add a task to the TODO list without lifting the mouse',
 						action: (string) => {
-							todo.push({
-								editable: false,
-								title: string,
-								completed: false
-							});
-		
+							setTodo([
+								...todo,
+								{
+									editable: false,
+									title: string,
+									completed: false
+								}
+							])
+
 							localStorage.setItem("todo", JSON.stringify(todo));
 							saveTodo();
 						}
@@ -233,7 +237,7 @@ export default function Home() {
 
 		documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
 			listener.subscribe(`Shift+key${powerbind.bind}`, () => {
-				setDocumentSettings({ 
+				console.log("[POWERBINDS]: Wanting to set it to: ", { 
 					...documentSettings, 
 					states: { 
 						...documentSettings.states, 
@@ -241,6 +245,15 @@ export default function Home() {
 						onSearchCompletion: powerbind 
 					}
 				});
+
+				// setDocumentSettings({ 
+				// 	...documentSettings, 
+				// 	states: { 
+				// 		...documentSettings.states, 
+				// 		searchOpen: true, 
+				// 		onSearchCompletion: powerbind 
+				// 	}
+				// });
 			});
 		});
 
@@ -293,7 +306,7 @@ export default function Home() {
 				last_changed: new Date()
 			})
 			.match({
-				id: supabase.auth.user().id
+				id: supabase.auth.user()?.id
 			})
 			.then(e => {
 				console.log("[AUTO-SAVE]: Saving Todo", e)

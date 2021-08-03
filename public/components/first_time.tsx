@@ -24,23 +24,34 @@ export default function FirstTime() {
     const [ loaded, setLoaded ] = useState(false);
 
     useEffect(() => {
-        console.log("Performing First Time Settup and Optimisations...");
+        if(activePannel == 'auth' || activePannel == 'features' || activePannel == 'finish') {
+            console.log("Performing First Time Settup and Optimisations...");
 
-        unSPLASH
-            .collections
-            .getPhotos({ 
-                collectionId: 'j21FBkp0aoQ',
-                perPage: 50
-            }).then(data => {
-                localStorage.setItem('dynamic-images', JSON.stringify(data.response));
-                setLoaded(true);
-            })
+            unSPLASH
+                .collections
+                .getPhotos({ 
+                    collectionId: 'j21FBkp0aoQ',
+                    perPage: 50
+                }).then(data => {
+                    localStorage.setItem('dynamic-images', JSON.stringify(data.response));
+                    setLoaded(true);
+                })
+        }
     }, [])
 
     useEffect(() => {
         if(activePannel == 'finish') {
-            documentSettings.settings.firstTime.value = false;
-            setDocumentSettings(documentSettings);
+            // documentSettings.settings.firstTime.value = false;
+            setDocumentSettings({
+                ...documentSettings,
+                settings: {
+                    ...documentSettings.settings,
+                    firstTime: {
+                        ...documentSettings.settings.firstTime,
+                        value: false
+                    }
+                }
+            });
 
             console.log(documentSettings);
             console.log(`[SYSTEM]: \tFirst Time Settup Complete.`);
