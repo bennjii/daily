@@ -39,8 +39,19 @@ export default function Theme(props) {
                     <div 
                         className={documentSettings.settings.backgroundImage.value == 'static' ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.settings.backgroundImage.value = 'static';
-                            callback(documentSettings);
+                            // documentSettings.settings.backgroundImage.value = 'static';
+                            // callback(documentSettings);
+
+                            callback({
+                                ...documentSettings,
+                                settings: {
+                                    ...documentSettings.settings,
+                                    backgroundImage: {
+                                        ...documentSettings.settings.backgroundImage,
+                                        value: 'static'
+                                    }
+                                }
+                            });
                         }}
                     >
                         Static
@@ -49,8 +60,19 @@ export default function Theme(props) {
                     <div 
                         className={documentSettings.settings.backgroundImage.value == 'dynamic'  ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.settings.backgroundImage.value = 'dynamic'; 
-                            callback(documentSettings);
+                            // documentSettings.settings.backgroundImage.value = 'dynamic'; 
+                            // callback(documentSettings);
+
+                            callback({
+                                ...documentSettings,
+                                settings: {
+                                    ...documentSettings.settings,
+                                    backgroundImage: {
+                                        ...documentSettings.settings.backgroundImage,
+                                        value: 'dynamic'
+                                    }
+                                }
+                            });
                         }}
                     >
                         Dynamic
@@ -59,8 +81,18 @@ export default function Theme(props) {
                     <div 
                         className={documentSettings.settings.backgroundImage.value == 'color'  ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.settings.backgroundImage.value = 'color';
-                            callback(documentSettings);
+                            // documentSettings.settings.backgroundImage.value = 'color';
+
+                            callback({
+                                ...documentSettings,
+                                settings: {
+                                    ...documentSettings.settings,
+                                    backgroundImage: {
+                                        ...documentSettings.settings.backgroundImage,
+                                        value: 'color'
+                                    }
+                                }
+                            });
                         }}
                     >
                         Color

@@ -41,16 +41,36 @@ export default function Prefrences(props) {
                                     (documentSettings.settings[e].type == 'toggle') ?
                                         // Toggle Type
                                         <div onClick={() => {
-                                            documentSettings.settings[e].value = !documentSettings.settings[e].value;
-                                            callback(documentSettings);
+                                            callback({
+                                                ...documentSettings,
+                                                settings: {
+                                                    ...documentSettings.settings,
+                                                    [e]: {
+                                                        ...documentSettings.settings[e],
+                                                        value: !documentSettings.settings[e].value
+                                                    }
+                                                }
+                                            })
+                                            // documentSettings.settings[e].value = !documentSettings.settings[e].value;
+                                            // callback(documentSettings);
                                         }}>
                                             { documentSettings.settings[e].value ? <Check/> : <Square /> }
                                         </div>
                                     :
                                         // List Type
                                         <div onClick={() => {
-                                            documentSettings.settings[e].value = (list_options[list_index >= list_options.length-1 ? 0 : list_index+1]).trim();
-                                            callback(documentSettings);
+                                            callback({
+                                                ...documentSettings,
+                                                settings: {
+                                                    ...documentSettings.settings,
+                                                    [e]: {
+                                                        ...documentSettings.settings[e],
+                                                        value: (list_options[list_index >= list_options.length-1 ? 0 : list_index+1]).trim()
+                                                    }
+                                                }
+                                            })
+                                            // documentSettings.settings[e].value = (list_options[list_index >= list_options.length-1 ? 0 : list_index+1]).trim();
+                                            // callback(documentSettings);
                                         }}>
                                             { documentSettings.settings[e].value  }
                                         </div>

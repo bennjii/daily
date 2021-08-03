@@ -35,7 +35,7 @@ export default function Clock() {
             <div>
                 <p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: (documentSettings.settings.shortDate.value) ? 'short' : 'long' }).toUpperCase()}</p>
 
-                <Settings color={"rgb(var(--clock-color))"} opacity={0.055} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
+                <Settings color={"rgb(var(--clock-color))"} opacity={0.45} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
             </div>
         </div>
     )

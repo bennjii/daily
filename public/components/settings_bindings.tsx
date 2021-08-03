@@ -145,8 +145,13 @@ export default function Bindings(props) {
                     <div 
                         className={documentSettings.powertools.search_engine == 'duckduckgo' ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.powertools.search_engine = 'duckduckgo';
-                            callback(documentSettings);
+                            callback({
+                                ...documentSettings,
+                                powertools: {
+                                    ...documentSettings.powertools,
+                                    search_engine: 'duckduckgo'
+                                }
+                            });
                         }}
                     >
                         DuckDuckGo
@@ -155,8 +160,13 @@ export default function Bindings(props) {
                     <div 
                         className={documentSettings.powertools.search_engine == 'google' ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.powertools.search_engine = 'google';
-                            callback(documentSettings);
+                            callback({
+                                ...documentSettings,
+                                powertools: {
+                                    ...documentSettings.powertools,
+                                    search_engine: 'google'
+                                }
+                            });
                         }}
                     >
                         Google
@@ -165,8 +175,13 @@ export default function Bindings(props) {
                     <div 
                         className={documentSettings.powertools.search_engine == 'escosia' ? styles.activePannel : undefined} 
                         onClick={() => {
-                            documentSettings.powertools.search_engine = 'escosia';
-                            callback(documentSettings);
+                            callback({
+                                ...documentSettings,
+                                powertools: {
+                                    ...documentSettings.powertools,
+                                    search_engine: 'escosia'
+                                }
+                            });
                         }}
                     >
                         Escosia

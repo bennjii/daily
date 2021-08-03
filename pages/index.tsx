@@ -30,6 +30,7 @@ import fetch from 'node-fetch';
 global.fetch = fetch;
 
 import { createApi } from 'unsplash-js'
+import Clock from '@components/clock'
 
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
 
@@ -251,12 +252,12 @@ export default function Home() {
 	useEffect(() => {
 		console.log("[SYSTEM]:\t Component Started");
 
-		const repeat = () => {
-			setDate(new Date());
-			setTimeout(repeat, 100)
-		}
+		// const repeat = () => {
+		// 	setDate(new Date());
+		// 	setTimeout(repeat, 100)
+		// }
 
-		setTimeout(repeat, 100);
+		// setTimeout(repeat, 100);
 	}, []);
 
 	useEffect(() => {
@@ -264,7 +265,7 @@ export default function Home() {
 
 		if(supabase.auth.user()?.aud == 'authenticated')
 			saveSettings()
-	}, [documentSettings])
+	}, [documentSettings.settings, documentSettings.powertools]);
 
 	const saveSettings = () => {
 		console.log("[AUTO-SAVE]: Attempting to Save Settings", documentSettings);
@@ -346,6 +347,11 @@ export default function Home() {
 	}
 
 	useEffect(() => {
+		localStorage.setItem("todo", JSON.stringify(todo));
+		saveTodo();
+	}, [todo])
+
+	useEffect(() => {
 		console.log('[THEME]:\t Loading Theme', documentSettings.settings.theme);
 
 		loadTheme(documentSettings.settings.theme.value);
@@ -372,6 +378,7 @@ export default function Home() {
 
 				if(backgroundStyle?.backgroundImage) {
 					// console.log(ntc.name(backgroundStats.color))
+					console.log(`[THEME]:\tTheme Changed, Wallpaper Exists ~ ${backgroundStats.color} comp ${hex}, verifying integrity... [${ntc.name(backgroundStats.color)[3].toString().toLowerCase()}~${result}]`)
 					if(ntc.name(backgroundStats.color)[3].toString().toLowerCase() == result) return;
 				}
 
@@ -399,7 +406,7 @@ export default function Home() {
 				break;
 					
 		}
-	}, [, documentSettings])
+	}, [, documentSettings.settings.backgroundImage])
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
@@ -462,26 +469,7 @@ export default function Home() {
 						}
 					</div>
 
-					<div className={styles.time}>
-						<h1 style={{ color:  color }}>
-							{
-								(documentSettings.settings.hour24.value) ?
-								date.getHours() 
-								:
-								date.getHours() > 12 ? date.getHours()-12 : date.getHours() 
-							}
-							:
-							{ 
-								(date.getMinutes() < 10) ? `0${date.getMinutes()}` : date.getMinutes() 
-							}
-						</h1>
-
-						<div>
-							<p style={{ color: color }}>{date.toLocaleString('en-us', {  weekday: 'long', day: '2-digit', month: (documentSettings.settings.shortDate.value) ? 'short' : 'long' }).toUpperCase()}</p>
-
-							<Settings color={"rgb(var(--clock-color))"} opacity={0.45} size={20} onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })}/>
-						</div>
-					</div>
+					<Clock />
 				</div>
 
 				{
@@ -545,24 +533,38 @@ export default function Home() {
 								}
 							
 								<Plus color={"rgb(var(--primary-color))"} size={20} strokeWidth={1.5} onClick={() => {
-									todo.push({
-										editable: true,
-										title: '',
-										completed: false
-									})
+									// todo.push({
+									// 	editable: true,
+									// 	title: '',
+									// 	completed: false
+									// });
+
+									setTodo([
+										...todo,
+										{
+											editable: true,
+											title: '',
+											completed: false
+										}
+									])
 
 									localStorage.setItem("todo", JSON.stringify(todo));
 									saveTodo();
 								}}/>
 							</div>
-							<div className={styles.todoBody}>
+							<div className={styles.todoBody}>	
 								{
 									todo?.map((e, index) => {
 										return (
 											<div key={`TODO${index}`} onClick={(e) => {
 													//@ts-ignore
-													if(e.target.nodeName == "DIV") {
-														todo[index].completed = !todo[index].completed;
+													if(e.target.nodeName == "DIV") {	
+														const indexed = todo.map((e, i) => {
+															if(index == i) return { ...e, completed: !e.completed }
+														  	else return e
+														});
+
+														setTodo(indexed);
 														localStorage.setItem("todo", JSON.stringify(todo));
 														saveTodo();
 													}
@@ -573,19 +575,38 @@ export default function Home() {
 												?
 												<div>
 													<input type="text" defaultValue={e.title} placeholder={"Click to edit me"} onBlur={(e) => { 
-														todo[index] = {
-															editable: false,
-															title: e.target.value,
-															completed: false
-														}
+														// todo[index] = {
+														// 	editable: false,
+														// 	title: e.target.value,
+														// 	completed: false
+														// }
+
+														const indexed = todo.map((__e, i) => {
+															if(index == i) return { ...__e, title: e.target.value, editable: false }
+														  	else return __e
+														});
+
+														setTodo(indexed);
 													}} onKeyDown={(e) => {
 														if(e.key == "Enter") {
-															todo[index] = {
-															editable: false,
-															//@ts-ignore
-															title: e.target.value,
-															completed: false
-															}
+															const indexed = todo.map((__e, i) => {
+																if(index == i) return { 
+																	...__e, 
+																	//@ts-ignore
+																	title: e.target.value, 
+																	editable: false
+																}
+																  else return __e
+															});
+	
+															setTodo(indexed);
+
+															// todo[index] = {
+															// 	editable: false,
+															// 	//@ts-ignore
+															// 	title: e.target.value,
+															// 	completed: false
+															// }
 
 															localStorage.setItem("todo", JSON.stringify(todo));
 															saveTodo();
@@ -603,7 +624,13 @@ export default function Home() {
 												>
 													<div className={styles.todoLabel}>
 														<p onClick={() => {
-															todo[index].editable = true
+															const indexed = todo.map((e, i) => {
+																if(index == i) return { ...e, editable: true }
+																  else return e
+															});
+	
+															setTodo(indexed);
+															// todo[index].editable = true
 														}}>{e.title}</p>
 													</div>
 
@@ -626,7 +653,10 @@ export default function Home() {
 													</div>
 
 													<Trash color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
-														todo.splice(index, 1);
+														setTodo(todo.filter((_, indx) => index !== indx));
+														// setTodo();
+
+														// todo.splice(index, 1);
 														localStorage.setItem("todo", JSON.stringify(todo));
 														saveTodo();
 													}} onMouseOver={(e) => {

@@ -14,3 +14,5 @@ cd ./out && grep -rli '_next' * | xargs -I@ sed -i '' 's/_next/next/g' @;
 zip -r -FS ../daily.zip *;
 
 echo ✨ Compiled Sucessfully 
+
+git add -A
