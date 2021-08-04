@@ -45,8 +45,22 @@ export type Binding = {
 export type DocumentContextType = {
     documentSettings: Document,
     setDocumentSettings: Function,
+    saveSettings: Function,
+
     userData: User,
-    setUserData: Function
+    setUserData: Function,
+
+    todo: TodoItem[],
+    setTodo: Function,
+    saveTodo: Function,
+
+    backgroundStats: any
+}
+
+export type TodoItem = {
+    completed: boolean
+    editable: boolean, 
+    title: string,
 }
 
 export type DocumentFeaturesContextType = {

@@ -32,43 +32,93 @@ global.fetch = fetch;
 import { createApi } from 'unsplash-js'
 import Clock from '@components/clock'
 import { setOriginalNode } from 'typescript'
+import PowerTools from '@components/powertools_component'
+import Todo from '@components/todo_component'
+import Credit from '@components/credit'
 
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
 
 export default function Home() {
-	const [ date, setDate ] = useState(new Date());
-	const [ background, setBackground ] = useState(null);
 	const [ userData, setUserData ] = useState<User>(null);
-
-	const searchRef = useRef();
-
-	if(!process.browser) return <></>;
-
-	const color = "rgb(var(--clock-color))"; //`#${invert(background?.color ? background.color : '#000000')}`;
+	const [ backgroundStyle, sbs ] = useState(null);
+	const [ backgroundStats, sbst ] = useState(null);
 	
-	useEffect(() => {
-		supabase.auth.onAuthStateChange((event, session) => {
-			console.log('[USER]:\tAuth State Changed Fetching...')
-			if(session.user.id)
-				supabase
-					.from('users')
-					.select('*')
-					.eq('id', session.user.id)
-					.then(usr => {
-						setUserData(usr.data[0]);
-						seekChanges();
+	const saveSettings = () => {
+		supabase
+			.from('users')
+			.update({
+				settings: JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v),
+				last_changed: new Date()
+			})
+			.match({
+				id: supabase.auth.user().id
+			})
+			.then(e => {
+				console.log("[AUTO-SAVE]: Saved Settings", e)
+				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+			})
+	}
 
-						// supabase
-						// 	.from('users')
-						// 	.select('*')
-						// 	.match({ id: session.user.id })
-						// 	.then(e => {
-						// 		setDocumentSettings(e.data[0].settings);
-						// 		setTodo(e.data[0].todo ? e.data[0].todo : []);
-						// 	})
-					})
-		});
-	}, [])
+	const saveTodo = () => {
+		supabase
+			.from('users')
+			.update({
+				todo: todo,
+				last_changed: new Date()
+			})
+			.match({
+				id: supabase.auth.user()?.id
+			})
+			.then(e => {
+				console.log("[AUTO-SAVE]: Saved Todo", e)
+				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+			})
+	}
+
+	const seekChanges = () => {
+		if(supabase.auth.user()?.aud == 'authenticated')
+			supabase
+				.from('users')
+				.select('*')
+				.match({ id: supabase.auth.user().id })
+				.then(e => {
+					if(!e.data[0]) return;
+
+					const last_changed_ = JSON.parse(localStorage.getItem("last-changed"));
+
+					if(new Date(last_changed_).getTime() - new Date(e.data[0].last_changed).getTime() < 0 || !last_changed_) {
+						// Time has passed (out of date, please update)
+						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
+
+						setTodo(e.data[0].todo ? e.data[0].todo : []);
+						
+						setDocumentSettings({
+							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
+							states: {
+								editingTitle: false,
+								settingsOpen: false,
+								searchOpen: false
+							}
+						});
+
+						console.log("DOWNLOADED ",{
+							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
+							states: {
+								editingTitle: false,
+								settingsOpen: false,
+								searchOpen: false
+							}
+						});
+
+						localStorage.setItem("todo", JSON.stringify(e.data[0].todo ? e.data[0].todo : []));
+					}else {
+						console.log("[SEEK]:\t\t UP TO DATE")
+						// On the latest version, probably should reciprocate information to the server if not matching...
+						// saveTodo();
+						// saveSettings();
+					}
+				});
+	}
 
 	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : [])
 	const [ documentSettings, setDocumentSettings ] = useState<Document>(
@@ -205,107 +255,93 @@ export default function Home() {
 		}
 	);
 
+	if(!process.browser) return <></>;
+	
+	useEffect(() => {
+		supabase.auth.onAuthStateChange((event, session) => {
+			console.log('[USER]:\tAuth State Changed Fetching...')
+			if(session.user.id)
+				supabase
+					.from('users')
+					.select('*')
+					.eq('id', session.user.id)
+					.then(usr => {
+						setUserData(usr.data[0]);
+						seekChanges();
+					})
+		});
+	}, [])
+
 	useEffect(() => {
 		if(!process.browser) return;
 
 		//@ts-expect-error
 		const listener = new createListener();
 
-		// if(!documentSettings.states.assignedPowerbinds) {
-			console.log("[SYSTEM]:\tAssigning Powerbinds");
+		console.log("[SYSTEM]:\tAssigning Powerbinds");
 
-			const escape = listener.subscribe('Escape', () => {
-				if(documentSettings.states.searchOpen) {
-					documentSettings.states.searchOpen = false;
-					setDocumentSettings(documentSettings);
-
-					// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
-				}
-				if(documentSettings.states.settingsOpen) {
-					documentSettings.states.settingsOpen = false;
-					setDocumentSettings(documentSettings);
-
-					// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, settingsOpen: false }});
-				}
-			});
-
-			const resetState = listener.subscribe('Shift+Down', () => {
-				setDocumentSettings(null);
-				localStorage.removeItem("settings");
-				localStorage.removeItem("todo");
-				localStorage.removeItem("dynamic-images");
-				localStorage.removeItem("last-changed");
-
-				supabase.auth.signOut();
-				window.location.reload();
-			});
-
-			listener.setMonitor((keyName, matched, originalEvent) => {
-				documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
-					if(keyName == `shift+key${powerbind.bind}`) {
-						console.log(`[POWERBINDS]: You pressed the ${powerbind.title} bind.`);
-						console.log("[POWERBINDS]: Origional Event ", originalEvent);
-
-						originalEvent.preventDefault();
-
-						// console.log("[POWERBINDS]: Wanting to set it to: ", { 
-						// 	...documentSettings, 
-						// 	states: { 
-						// 		...documentSettings.states, 
-						// 		searchOpen: true, 
-						// 		onSearchCompletion: powerbind 
-						// 	}
-						// });
-
-						setDocumentSettings({ 
-							...documentSettings, 
-							states: { 
-								...documentSettings.states, 
-								searchOpen: true, 
-								onSearchCompletion: powerbind 
-							}
-						});
+		const escape = listener.subscribe('Escape', () => {
+			if(documentSettings.states.searchOpen) {
+				setDocumentSettings({
+					...documentSettings,
+					states: {
+						...documentSettings.states,
+						searchOpen: false
 					}
-				});
-				
-			});
+				})
+			}
+			if(documentSettings.states.settingsOpen) {
+				setDocumentSettings({
+					...documentSettings,
+					states: {
+						...documentSettings.states,
+						settingsOpen: false
+					}
+				})
+			}
+		});
 
-			// BINDING SYSTEM
+		const resetState = listener.subscribe('Shift+Down', () => {
+			setDocumentSettings(null);
+			localStorage.removeItem("settings");
+			localStorage.removeItem("todo");
+			localStorage.removeItem("dynamic-images");
+			localStorage.removeItem("last-changed");
 
-			// documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
-			// 	listener.subscribe(`Shift+key${powerbind.bind}`, () => {
-			// 		console.log("[POWERBINDS]: Wanting to set it to: ", { 
-			// 			...documentSettings, 
-			// 			states: { 
-			// 				...documentSettings.states, 
-			// 				searchOpen: true, 
-			// 				onSearchCompletion: powerbind 
-			// 			}
-			// 		});
+			supabase.auth.signOut();
+			window.location.reload();
+		});
 
-			// 		setDocumentSettings({ 
-			// 			...documentSettings, 
-			// 			states: { 
-			// 				...documentSettings.states, 
-			// 				searchOpen: true, 
-			// 				onSearchCompletion: powerbind 
-			// 			}
-			// 		});
-			// 	});
-			// });
+		listener.setMonitor((keyName, matched, originalEvent) => {
+			documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
+				if(keyName == `shift+key${powerbind.bind}`) {
+					console.log(`[POWERBINDS]: You pressed the ${powerbind.title} bind.`);
+					console.log("[POWERBINDS]: Origional Event ", originalEvent);
 
-			setDocumentSettings({
-				...documentSettings,
-				states: {
-					...documentSettings.states,
-					assignedPowerbinds: true,
+					originalEvent.preventDefault();
+
+					setDocumentSettings({ 
+						...documentSettings, 
+						states: { 
+							...documentSettings.states, 
+							searchOpen: true, 
+							onSearchCompletion: powerbind 
+						}
+					});
 				}
 			});
+			
+		});
 
-			console.log("[SYSTEM]:\tAssigned Powerbinds");
-		// }
+		setDocumentSettings({
+			...documentSettings,
+			states: {
+				...documentSettings.states,
+				assignedPowerbinds: true,
+			}
+		});
 
-		console.log(listener)
+		console.log("[SYSTEM]:\tAssigned Powerbinds");
 		
 		return () => {
 			listener.stopListening();
@@ -316,100 +352,11 @@ export default function Home() {
   	}, [, documentSettings.powertools.powerbinds]);
 
 	useEffect(() => {
-		console.log("[SYSTEM]:\t Component Started");
-
-		// const repeat = () => {
-		// 	setDate(new Date());
-		// 	setTimeout(repeat, 100)
-		// }
-
-		// setTimeout(repeat, 100);
-	}, []);
-
-	useEffect(() => {
 		localStorage.setItem("settings", JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v));
 
 		if(supabase.auth.user()?.aud == 'authenticated')
 			saveSettings()
 	}, [documentSettings.settings, documentSettings.powertools]);
-
-	const saveSettings = () => {
-		// console.log("[AUTO-SAVE]: Attempting to Save Settings", documentSettings);
-		supabase
-			.from('users')
-			.update({
-				settings: JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v),
-				last_changed: new Date()
-			})
-			.match({
-				id: supabase.auth.user().id
-			})
-			.then(e => {
-				console.log("[AUTO-SAVE]: Saved Settings", e)
-				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
-			})
-	}
-
-	const saveTodo = () => {
-		supabase
-			.from('users')
-			.update({
-				todo: todo,
-				last_changed: new Date()
-			})
-			.match({
-				id: supabase.auth.user()?.id
-			})
-			.then(e => {
-				console.log("[AUTO-SAVE]: Saved Todo", e)
-				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
-			})
-	}
-
-	const seekChanges = () => {
-		if(supabase.auth.user()?.aud == 'authenticated')
-			supabase
-				.from('users')
-				.select('*')
-				.match({ id: supabase.auth.user().id })
-				.then(e => {
-					if(!e.data[0]) return;
-
-					const last_changed_ = JSON.parse(localStorage.getItem("last-changed"));
-
-					if(new Date(last_changed_).getTime() - new Date(e.data[0].last_changed).getTime() < 0 || !last_changed_) {
-						// Time has passed (out of date, please update)
-						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
-
-						setTodo(e.data[0].todo ? e.data[0].todo : []);
-						
-						setDocumentSettings({
-							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
-							states: {
-								editingTitle: false,
-								settingsOpen: false,
-								searchOpen: false
-							}
-						});
-
-						console.log("DOWNLOADED ",{
-							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
-							states: {
-								editingTitle: false,
-								settingsOpen: false,
-								searchOpen: false
-							}
-						});
-
-						localStorage.setItem("todo", JSON.stringify(e.data[0].todo ? e.data[0].todo : []));
-					}else {
-						console.log("[SEEK]:\t\t UP TO DATE")
-						// On the latest version, probably should reciprocate information to the server if not matching...
-						// saveTodo();
-						// saveSettings();
-					}
-				});
-	}
 
 	useEffect(() => {
 		localStorage.setItem("todo", JSON.stringify(todo));
@@ -422,9 +369,6 @@ export default function Home() {
 		loadTheme(documentSettings.settings.theme.value);
 		seekChanges();
 	}, []);
-
-	const [ backgroundStyle, sbs ] = useState(null);
-	const [ backgroundStats, sbst ] = useState(null);
 
 	useEffect(() => {
 		console.log(`[THEME]:\t Background Image Changed ${documentSettings.settings.backgroundImage.value}`);
@@ -473,8 +417,10 @@ export default function Home() {
 		}
 	}, [, documentSettings.settings.backgroundImage])
 
+	
+
 	return (
-		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, userData, setUserData }}>
+		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, saveSettings, userData, setUserData, todo, setTodo, saveTodo, backgroundStats }}>
 			<div className={styles.container} style={
 				documentSettings.settings.backgroundType.value == "chaos" ?
 				{
@@ -489,24 +435,7 @@ export default function Home() {
 				}
 				:
 				{}
-			}>
-				{/* {
-					backgroundStats?.backgroundImage ? 
-					<div className={styles.backgroundBlur}>
-						<Blurhash
-							hash={backgroundStats.backgroundImage.blur_hash}
-							width={window.innerWidth}
-							height={window.innerHeight}
-							resolutionX={64}
-							resolutionY={64}
-							punch={1}
-							/>
-					</div>
-					
-					:
-					<></>
-				} */}
-				
+			}>	
 				<Head>
 					<title>New Tab</title>
 					<link rel="icon" href="/favicon.ico" />	
@@ -521,247 +450,22 @@ export default function Home() {
 
 				<div className={styles.leftSide}>
 					<div>
-						{
-							(documentSettings.settings.showAds.value) 
-							&&
-							<div>
-								<h3 style={{ color:  color }}>AD</h3>
-							</div>
-						}
-						
-						{
-							(documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay color={color} />
-						}
+						{ (documentSettings.settings.showAds.value) && <div> <h3>AD</h3> </div> }
+						{ (documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay /> }
 					</div>
 
 					<Clock />
 				</div>
 
-				{
-					documentSettings.states.searchOpen ?
-					<div className={`${styles.search} ${styles.searchActive}`} onClick={(e) => {
-						//@ts-expect-error
-						if(e.target.classList.value.includes(styles.search)) setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false }})
-					}}>
-						<div>
-							{/* <div className={styles.searchResults}>
-								<div>
-									<Plus size={15} color={"#3b3b3b"}/>
-									<p>New Task</p>
-								</div>
-							</div> */}
-							<div id={"search"} className={styles.searchDiv}>
-								<input placeholder={`${/* ↑ */"/"}${documentSettings.states.onSearchCompletion?.bind}\t${documentSettings.states.onSearchCompletion?.title}`} ref={searchRef} autoFocus onKeyDown={(event) => {
-									if(event.key.toLocaleLowerCase() == "escape") {
-										setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false }})
-									}else if(event.key.toLocaleLowerCase() == "enter") {
-										//@ts-expect-error
-										documentSettings.states.onSearchCompletion?.action(searchRef.current.value);
-										//@ts-expect-error
-										searchRef.current.value = '';
-									}
-								}}></input>
-
-								{
-									(() => {
-										switch(documentSettings.states.onSearchCompletion?.title) {
-											case 'search':
-												return <ArrowRight size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
-											case 'task':
-												return <Plus size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
-											default:
-												return <ArrowRight size={15} color={"rgb(var(--primary-color))"} opacity={"0.7"}/>
-										}
-									})()
-								}
-							</div>
-						</div>
-					</div>
-					:
-					<div className={styles.search}></div>
-				}
+				<PowerTools />
 				
 				<div className={styles.rightSide}>
-					{
-						(process.browser && documentSettings.settings.showToDo.value) ?
-						<div>
-							<div className={styles.todoHeader}>
-								{
-									documentSettings.states.editingTitle ?
-									<input type="text" placeholder={documentSettings.settings.title.value} 
-									onChange={(e) => setDocumentSettings({...documentSettings, settings: { ...documentSettings.settings, title: { ...documentSettings.settings.title, value: e.target.value } }})} 
-									onKeyDown={(e) => {
-										if(e.key == "Enter") setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: false } })
-									}} autoFocus/>
-									:
-									<h2 onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: true } })}>{documentSettings.settings.title.value}</h2>
-								}
-							
-								<Plus color={"rgb(var(--primary-color))"} size={20} strokeWidth={1.5} onClick={() => {
-									// todo.push({
-									// 	editable: true,
-									// 	title: '',
-									// 	completed: false
-									// });
-
-									setTodo([
-										...todo,
-										{
-											editable: true,
-											title: '',
-											completed: false
-										}
-									])
-
-									localStorage.setItem("todo", JSON.stringify(todo));
-									saveTodo();
-								}}/>
-							</div>
-							<div className={styles.todoBody}>	
-								{
-									todo?.map((e, index) => {
-										return (
-											<div key={`TODO${index}`} onClick={(e) => {
-													//@ts-ignore
-													if(e.target.nodeName == "DIV") {	
-														const indexed = todo.map((e, i) => {
-															if(index == i) return { ...e, completed: !e.completed }
-														  	else return e
-														});
-
-														setTodo(indexed);
-														localStorage.setItem("todo", JSON.stringify(todo));
-														saveTodo();
-													}
-												}}>
-
-												{
-												(e.editable)
-												?
-												<div>
-													<input type="text" defaultValue={e.title} placeholder={"Click to edit me"} onBlur={(e) => { 
-														// todo[index] = {
-														// 	editable: false,
-														// 	title: e.target.value,
-														// 	completed: false
-														// }
-
-														const indexed = todo.map((__e, i) => {
-															if(index == i) return { ...__e, title: e.target.value, editable: false }
-														  	else return __e
-														});
-
-														setTodo(indexed);
-													}} onKeyDown={(e) => {
-														if(e.key == "Enter") {
-															const indexed = todo.map((__e, i) => {
-																if(index == i) return { 
-																	...__e, 
-																	//@ts-ignore
-																	title: e.target.value, 
-																	editable: false
-																}
-																  else return __e
-															});
-	
-															setTodo(indexed);
-
-															// todo[index] = {
-															// 	editable: false,
-															// 	//@ts-ignore
-															// 	title: e.target.value,
-															// 	completed: false
-															// }
-
-															localStorage.setItem("todo", JSON.stringify(todo));
-															saveTodo();
-														}
-													}} autoFocus/>
-												</div>
-												:
-												<div 
-													className={(e.completed) ? styles.completedTask : styles.uncompletedTask }
-													style={{ backgroundColor: e.completed ? 
-														`rgb(${getThemeColor(documentSettings.settings.theme.value, "--approval-color")?.split(',').map(e => (parseInt(e) < 255-150) ? parseInt(e) + 150 : 255 ).join(',')})`
-														: 
-														''  
-													}}
-												>
-													<div className={styles.todoLabel}>
-														<p onClick={() => {
-															const indexed = todo.map((e, i) => {
-																if(index == i) return { ...e, editable: true }
-																  else return e
-															});
-	
-															setTodo(indexed);
-															// todo[index].editable = true
-														}}>{e.title}</p>
-													</div>
-
-													<div>
-													{
-														(e.completed)
-														?
-														<Check color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20}  onClick={(e) => {
-															todo[index].completed = false;
-															localStorage.setItem("todo", JSON.stringify(todo));
-															saveTodo();
-														}}/>
-														:
-														<Square color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
-															todo[index].completed = true;
-															localStorage.setItem("todo", JSON.stringify(todo));
-															saveTodo();
-														}}/>
-													}
-													</div>
-
-													<Trash color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
-														setTodo(todo.filter((_, indx) => index !== indx));
-														// setTodo();
-
-														// todo.splice(index, 1);
-														localStorage.setItem("todo", JSON.stringify(todo));
-														saveTodo();
-													}} onMouseOver={(e) => {
-														//@ts-expect-error
-														if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {
-															//@ts-expect-error
-															e.target.parentElement.classList.add(styles.todoTrashHover)
-														}else {
-															//@ts-expect-error
-															e.target.classList.add(styles.todoTrashHover)
-														}
-													}} onMouseLeave={(e) => {
-														//@ts-expect-error
-														if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {
-															//@ts-expect-error
-															e.target.parentElement.classList.remove(styles.todoTrashHover)
-														}else {
-															//@ts-expect-error
-															e.target.classList.remove(styles.todoTrashHover)
-														}
-													}}/>
-												</div> 
-												}
-											</div>
-										)
-									})
-								}
-							</div>
-						</div> 
-						:
-						<></>
-					}
+					<Todo />
 				</div>
 			
 				{
 					documentSettings.states.settingsOpen ?
-					<div className={styles.settingsOverlay} id={"settingsBackground"} onClick={(e) => {
-						// // @ts-expect-error
-						// if(e.target.id == 'settingsBackground') setDocumentSettings({...documentSettings, states: { ...documentSettings.states, settingsOpen: !documentSettings.states.settingsOpen } })
-					}}>
+					<div className={styles.settingsOverlay} id={"settingsBackground"}>
 						<SettingsPage />
 					</div>
 					:
@@ -777,26 +481,7 @@ export default function Home() {
 					<></>
 				}
 
-				{
-					documentSettings.settings.backgroundImage.value == 'dynamic' ?
-					<div className={styles.photoCredit}>
-						{
-							documentSettings.settings.backgroundType.value == 'standard' ?
-							<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
-								<p>Photo by</p>
-								<a href={`https://unsplash.com/@${backgroundStats?.user?.username}`}>{backgroundStats?.user?.name} {backgroundStats?.user?.lastName}</a>
-							</h6>
-							:
-							<h6 style={{ color, fontWeight: 100, fontSize: '12px' }}>
-								<p>Lorenz Chaos Attractor</p>
-							</h6>
-						}
-					</div>
-					:	
-					<></>
-				}
-			
-				
+				<Credit />
 			</div>
 		</DocumentContext.Provider>
 	)
