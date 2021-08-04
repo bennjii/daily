@@ -15,11 +15,11 @@ export default function Auth(props) {
 
     useEffect(() => {
         supabase.auth.onAuthStateChange((type, session) => {
+            console.log('[USER]:\tUpdating States')
             if(session.user) {
                 if(session.user.aud == 'authenticated') {
                     callback('features')
                 }
-                console.log(session.user);
             }
         });
     }, [])

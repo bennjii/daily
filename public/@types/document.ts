@@ -3,6 +3,7 @@ export type Document = {
         editingTitle: boolean,
         settingsOpen: boolean,
         searchOpen: boolean,
+        assignedPowerbinds: boolean,
         onSearchCompletion: Binding
     },
     settings: {

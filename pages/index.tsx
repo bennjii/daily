@@ -47,6 +47,7 @@ export default function Home() {
 	
 	useEffect(() => {
 		supabase.auth.onAuthStateChange((event, session) => {
+			console.log('[USER]:\tAuth State Changed Fetching...')
 			if(session.user.id)
 				supabase
 					.from('users')
@@ -76,7 +77,8 @@ export default function Home() {
 			states: {
 				editingTitle: false,
 				settingsOpen: false,
-				searchOpen: false
+				searchOpen: false,
+				assignedPowerbinds: false
 			}
 		}
 		: 
@@ -84,7 +86,8 @@ export default function Home() {
 			states: {
 				editingTitle: false,
 				settingsOpen: false,
-				searchOpen: false
+				searchOpen: false,
+				assignedPowerbinds: false
 			},
 			settings: {
 				title: {
@@ -203,64 +206,110 @@ export default function Home() {
 
 	useEffect(() => {
 		if(!process.browser) return;
-		console.log("[SYSTEM]:\tAssigning Powerbinds")
 
 		//@ts-expect-error
 		const listener = new createListener();
-		listener.setMonitor(true);
 
-		const escape = listener.subscribe('Escape', () => {
-			if(documentSettings.states.searchOpen) {
-				documentSettings.states.searchOpen = false;
-				setDocumentSettings(documentSettings);
+		// if(!documentSettings.states.assignedPowerbinds) {
+			console.log("[SYSTEM]:\tAssigning Powerbinds");
 
-				// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
-			}
-			if(documentSettings.states.settingsOpen) {
-				documentSettings.states.settingsOpen = false;
-				setDocumentSettings(documentSettings);
+			const escape = listener.subscribe('Escape', () => {
+				if(documentSettings.states.searchOpen) {
+					documentSettings.states.searchOpen = false;
+					setDocumentSettings(documentSettings);
 
-				// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, settingsOpen: false }});
-			}
-		});
+					// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, searchOpen: false, onSearchCompletion: null }});
+				}
+				if(documentSettings.states.settingsOpen) {
+					documentSettings.states.settingsOpen = false;
+					setDocumentSettings(documentSettings);
 
-		const resetState = listener.subscribe('Shift+Down', () => {
-			setDocumentSettings(null);
-			localStorage.removeItem("settings");
-			localStorage.removeItem("todo");
-			localStorage.removeItem("dynamic-images");
-			localStorage.removeItem("last-changed");
+					// setDocumentSettings({ ...documentSettings, states: { ...documentSettings.states, settingsOpen: false }});
+				}
+			});
 
-			supabase.auth.signOut();
-			window.location.reload();
-		});
+			const resetState = listener.subscribe('Shift+Down', () => {
+				setDocumentSettings(null);
+				localStorage.removeItem("settings");
+				localStorage.removeItem("todo");
+				localStorage.removeItem("dynamic-images");
+				localStorage.removeItem("last-changed");
 
-		documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
-			listener.subscribe(`Shift+key${powerbind.bind}`, () => {
-				console.log("[POWERBINDS]: Wanting to set it to: ", { 
-					...documentSettings, 
-					states: { 
-						...documentSettings.states, 
-						searchOpen: true, 
-						onSearchCompletion: powerbind 
+				supabase.auth.signOut();
+				window.location.reload();
+			});
+
+			listener.setMonitor((keyName, matched, originalEvent) => {
+				documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
+					if(keyName == `shift+key${powerbind.bind}`) {
+						console.log(`[POWERBINDS]: You pressed the ${powerbind.title} bind.`);
+
+						console.log("[POWERBINDS]: Wanting to set it to: ", { 
+							...documentSettings, 
+							states: { 
+								...documentSettings.states, 
+								searchOpen: true, 
+								onSearchCompletion: powerbind 
+							}
+						});
+
+						setDocumentSettings({ 
+							...documentSettings, 
+							states: { 
+								...documentSettings.states, 
+								searchOpen: true, 
+								onSearchCompletion: powerbind 
+							}
+						});
 					}
 				});
-
-				// setDocumentSettings({ 
-				// 	...documentSettings, 
-				// 	states: { 
-				// 		...documentSettings.states, 
-				// 		searchOpen: true, 
-				// 		onSearchCompletion: powerbind 
-				// 	}
-				// });
+				
 			});
-		});
 
+			// BINDING SYSTEM
+			
+			// documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
+			// 	listener.subscribe(`Shift+key${powerbind.bind}`, () => {
+			// 		console.log("[POWERBINDS]: Wanting to set it to: ", { 
+			// 			...documentSettings, 
+			// 			states: { 
+			// 				...documentSettings.states, 
+			// 				searchOpen: true, 
+			// 				onSearchCompletion: powerbind 
+			// 			}
+			// 		});
+
+			// 		setDocumentSettings({ 
+			// 			...documentSettings, 
+			// 			states: { 
+			// 				...documentSettings.states, 
+			// 				searchOpen: true, 
+			// 				onSearchCompletion: powerbind 
+			// 			}
+			// 		});
+			// 	});
+			// });
+
+			setDocumentSettings({
+				...documentSettings,
+				states: {
+					...documentSettings.states,
+					assignedPowerbinds: true,
+				}
+			});
+
+			console.log("[SYSTEM]:\tAssigned Powerbinds");
+		// }
+
+		console.log(listener)
+		
 		return () => {
 			listener.stopListening();
+			
+			escape.unsubscribe();
+			resetState.unsubscribe();
 		}
-  	}, [, documentSettings?.powertools?.powerbinds]);
+  	}, [, documentSettings.powertools.powerbinds]);
 
 	useEffect(() => {
 		console.log("[SYSTEM]:\t Component Started");
@@ -281,8 +330,7 @@ export default function Home() {
 	}, [documentSettings.settings, documentSettings.powertools]);
 
 	const saveSettings = () => {
-		console.log("[AUTO-SAVE]: Attempting to Save Settings", documentSettings);
-
+		// console.log("[AUTO-SAVE]: Attempting to Save Settings", documentSettings);
 		supabase
 			.from('users')
 			.update({
@@ -293,7 +341,7 @@ export default function Home() {
 				id: supabase.auth.user().id
 			})
 			.then(e => {
-				console.log("[AUTO-SAVE]: Saving Settings", e)
+				console.log("[AUTO-SAVE]: Saved Settings", e)
 				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
 			})
 	}
@@ -309,7 +357,7 @@ export default function Home() {
 				id: supabase.auth.user()?.id
 			})
 			.then(e => {
-				console.log("[AUTO-SAVE]: Saving Todo", e)
+				console.log("[AUTO-SAVE]: Saved Todo", e)
 				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
 			})
 	}

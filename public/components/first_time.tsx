@@ -25,19 +25,22 @@ export default function FirstTime() {
 
     useEffect(() => {
         if(activePannel == 'auth' || activePannel == 'features' || activePannel == 'finish') {
-            console.log("Performing First Time Settup and Optimisations...");
+            if(!loaded) {
+                console.log("Performing First Time Settup and Optimisations...");
 
-            unSPLASH
-                .collections
-                .getPhotos({ 
-                    collectionId: 'j21FBkp0aoQ',
-                    perPage: 50
-                }).then(data => {
-                    localStorage.setItem('dynamic-images', JSON.stringify(data.response));
-                    setLoaded(true);
-                })
+                unSPLASH
+                    .collections
+                    .getPhotos({ 
+                        collectionId: 'j21FBkp0aoQ',
+                        perPage: 50
+                    }).then(data => {
+                        localStorage.setItem('dynamic-images', JSON.stringify(data.response));
+                        setLoaded(true);
+                    })
+            }
+            
         }
-    }, [])
+    }, [activePannel])
 
     useEffect(() => {
         if(activePannel == 'finish') {
