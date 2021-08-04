@@ -31,6 +31,7 @@ global.fetch = fetch;
 
 import { createApi } from 'unsplash-js'
 import Clock from '@components/clock'
+import { setOriginalNode } from 'typescript'
 
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
 
@@ -243,15 +244,18 @@ export default function Home() {
 				documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
 					if(keyName == `shift+key${powerbind.bind}`) {
 						console.log(`[POWERBINDS]: You pressed the ${powerbind.title} bind.`);
+						console.log("[POWERBINDS]: Origional Event ", originalEvent);
 
-						console.log("[POWERBINDS]: Wanting to set it to: ", { 
-							...documentSettings, 
-							states: { 
-								...documentSettings.states, 
-								searchOpen: true, 
-								onSearchCompletion: powerbind 
-							}
-						});
+						originalEvent.preventDefault();
+
+						// console.log("[POWERBINDS]: Wanting to set it to: ", { 
+						// 	...documentSettings, 
+						// 	states: { 
+						// 		...documentSettings.states, 
+						// 		searchOpen: true, 
+						// 		onSearchCompletion: powerbind 
+						// 	}
+						// });
 
 						setDocumentSettings({ 
 							...documentSettings, 
@@ -267,7 +271,7 @@ export default function Home() {
 			});
 
 			// BINDING SYSTEM
-			
+
 			// documentSettings?.powertools?.powerbinds.map((powerbind: Binding) => {
 			// 	listener.subscribe(`Shift+key${powerbind.bind}`, () => {
 			// 		console.log("[POWERBINDS]: Wanting to set it to: ", { 
