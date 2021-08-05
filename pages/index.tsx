@@ -24,7 +24,6 @@ import { getThemeColor, loadTheme, theme_list } from '@public/@types/themes'
 import { RGBToHex } from '@public/@types/themes'
 
 import { ntc } from '@components/ntc'
-import { Blurhash } from "react-blurhash";
 
 import fetch from 'node-fetch';
 global.fetch = fetch;
@@ -35,6 +34,7 @@ import { setOriginalNode } from 'typescript'
 import PowerTools from '@components/powertools_component'
 import Todo from '@components/todo_component'
 import Credit from '@components/credit'
+import Jottit from '@components/jottit'
 
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
 
@@ -120,13 +120,15 @@ export default function Home() {
 				});
 	}
 
-	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : [])
+	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : []);
+	const [ ] = useState();
 	const [ documentSettings, setDocumentSettings ] = useState<Document>(
 		(process.browser) && localStorage.getItem("settings") ? 
 		{
 			...JSON.parse(localStorage.getItem("settings"), (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
 			states: {
 				editingTitle: false,
+				editingJottTitle: false,
 				settingsOpen: false,
 				searchOpen: false,
 				assignedPowerbinds: false
@@ -136,6 +138,7 @@ export default function Home() {
 		{
 			states: {
 				editingTitle: false,
+				editingJottTitle: false,
 				settingsOpen: false,
 				searchOpen: false,
 				assignedPowerbinds: false
@@ -145,6 +148,11 @@ export default function Home() {
 					value: 'things to do',
 					desc: 'Title of TODO List',
 					type: "input"
+				},
+				jottit: {
+					value: false,
+					desc: 'Jot notes down easily and that are synced.',
+					type:"toggle"
 				},
 				theme: {
 					value: 'default',
@@ -385,12 +393,6 @@ export default function Home() {
 				const hex = RGBToHex(rgb);
 				const result = ntc.name(hex)[3].toString().toLowerCase();
 
-				if(backgroundStyle?.backgroundImage) {
-					// console.log(ntc.name(backgroundStats.color))
-					console.log(`[THEME]:\tTheme Changed, Wallpaper Exists ~ ${backgroundStats.color} comp ${hex}, verifying integrity... [${ntc.name(backgroundStats.color)[3].toString().toLowerCase()}~${result}]`)
-					if(ntc.name(backgroundStats.color)[3].toString().toLowerCase() == result) return;
-				}
-
 				const images = JSON.parse(localStorage.getItem('dynamic-images'));
 
 				const backgrounds = images?.results?.filter(e => {
@@ -400,7 +402,13 @@ export default function Home() {
 					return bg_color == result;
 				});
 
+
 				if(backgrounds) {
+					if(backgroundStyle?.backgroundImage) {
+						console.log(`[THEME]:\tTheme Changed, Wallpaper Exists ~ ${backgroundStats.color} comp ${hex}, verifying integrity... [${ntc.name(backgroundStats.color)[3].toString().toLowerCase()}~${result}]`)
+						if(ntc.name(backgroundStats.color)[3].toString().toLowerCase() == result) return;
+					}
+
 					const random_index = Math.floor(Math.random() * backgrounds.length);
 					console.log(`[THEME]:\t Background Search Filtered for ${result}::${random_index}`, backgrounds[random_index]);
 
@@ -417,7 +425,20 @@ export default function Home() {
 		}
 	}, [, documentSettings.settings.backgroundImage])
 
-	
+	const dom_style = 
+		documentSettings.settings.backgroundType.value == "chaos" ?
+		{
+			...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+			backgroundColor: "#000"
+		}
+		:
+		documentSettings ? 
+		{
+			...theme_list.find((e) => e.name == documentSettings.settings.theme.value).colors,
+			...backgroundStyle
+		}
+		:
+		{}
 
 	return (
 		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, saveSettings, userData, setUserData, todo, setTodo, saveTodo, backgroundStats }}>
@@ -461,6 +482,7 @@ export default function Home() {
 				
 				<div className={styles.rightSide}>
 					<Todo />
+					<Jottit />
 				</div>
 			
 				{

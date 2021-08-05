@@ -1,13 +1,17 @@
 export type Document = {
     states: {
         editingTitle: boolean,
+        editingJottTitle: boolean,
+
         settingsOpen: boolean,
         searchOpen: boolean,
+        
         assignedPowerbinds: boolean,
         onSearchCompletion: Binding
     },
     settings: {
         title: Prefrence & {value: string},
+        jottit: Prefrence & {value: boolean}
         theme: Prefrence & {value: string},
         showToDo: Prefrence & {value: boolean},
         showAds: Prefrence & {value: boolean},
