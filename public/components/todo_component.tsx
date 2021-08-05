@@ -5,7 +5,7 @@ import { DocumentContext } from '@public/@types/document_context';
 import { getThemeColor } from '@public/@types/themes';
 
 const Todo: React.FC<{}> = () =>  {
-    const { documentSettings, setDocumentSettings, todo, setTodo, saveTodo } = useContext(DocumentContext);
+    const { documentSettings, setDocumentSettings, todo, setTodo, saveStorageItems } = useContext(DocumentContext);
     
     return (
         <>
@@ -35,7 +35,7 @@ const Todo: React.FC<{}> = () =>  {
                             ])
 
                             localStorage.setItem("todo", JSON.stringify(todo));
-                            saveTodo();
+                            saveStorageItems();
                         }}/>
                     </div>
                     <div className={styles.todoBody}>	
@@ -52,7 +52,7 @@ const Todo: React.FC<{}> = () =>  {
 
                                                 setTodo(indexed);
                                                 localStorage.setItem("todo", JSON.stringify(todo));
-                                                saveTodo();
+                                                saveStorageItems();
                                             }
                                         }}>
 
@@ -81,7 +81,7 @@ const Todo: React.FC<{}> = () =>  {
 
                                                     setTodo(indexed);
                                                     localStorage.setItem("todo", JSON.stringify(todo));
-                                                    saveTodo();
+                                                    saveStorageItems();
                                                 }
                                             }} autoFocus/>
                                         </div>
@@ -117,7 +117,7 @@ const Todo: React.FC<{}> = () =>  {
     
                                                     setTodo(indexed);
                                                     localStorage.setItem("todo", JSON.stringify(todo));
-                                                    saveTodo();
+                                                    saveStorageItems();
                                                 }}/>
                                                 :
                                                 <Square color={(e.completed) ? "rgb(var(--approval-color))" : "rgb(var(--primary-color))"} size={20} onClick={(e) => {
@@ -128,7 +128,7 @@ const Todo: React.FC<{}> = () =>  {
     
                                                     setTodo(indexed);
                                                     localStorage.setItem("todo", JSON.stringify(todo));
-                                                    saveTodo();
+                                                    saveStorageItems();
                                                 }}/>
                                             }
                                             </div>
@@ -139,7 +139,7 @@ const Todo: React.FC<{}> = () =>  {
 
                                                 // todo.splice(index, 1);
                                                 localStorage.setItem("todo", JSON.stringify(todo));
-                                                saveTodo();
+                                                saveStorageItems();
                                             }} onMouseOver={(e) => {
                                                 //@ts-expect-error
                                                 if(e.target.nodeName == 'path' || e.target.nodeName == 'polyline') {

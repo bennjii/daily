@@ -47,7 +47,14 @@ export default function Home() {
 		supabase
 			.from('users')
 			.update({
-				settings: JSON.stringify(documentSettings, (k,v) => typeof v === "function" ? "" + v : v),
+				settings: JSON.stringify({
+					...documentSettings,
+					storage: {
+						...documentSettings.storage,
+						todo: todo,
+						jottit: jottit
+					}
+				}, (k,v) => typeof v === "function" ? "" + v : v),
 				last_changed: new Date()
 			})
 			.match({
@@ -59,7 +66,16 @@ export default function Home() {
 			})
 	}
 
-	const saveTodo = () => {
+	const saveStorageItems = () => {
+		setDocumentSettings({
+			...documentSettings,
+			storage: {
+				...documentSettings.storage,
+				todo: todo,
+				jottit: jottit
+			}
+		});
+
 		supabase
 			.from('users')
 			.update({
@@ -120,8 +136,7 @@ export default function Home() {
 				});
 	}
 
-	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : []);
-	const [ ] = useState();
+	
 	const [ documentSettings, setDocumentSettings ] = useState<Document>(
 		(process.browser) && localStorage.getItem("settings") ? 
 		{
@@ -131,7 +146,8 @@ export default function Home() {
 				editingJottTitle: false,
 				settingsOpen: false,
 				searchOpen: false,
-				assignedPowerbinds: false
+				assignedPowerbinds: false,
+				activeJott: 0
 			}
 		}
 		: 
@@ -141,7 +157,17 @@ export default function Home() {
 				editingJottTitle: false,
 				settingsOpen: false,
 				searchOpen: false,
-				assignedPowerbinds: false
+				assignedPowerbinds: false,
+				activeJott: 0
+			},
+			storage: {
+				todo: [],
+				jottit: [
+					{
+						title: 'My Jot',
+						content: 'Start Writing Here!'
+					}
+				]
 			},
 			settings: {
 				title: {
@@ -151,7 +177,7 @@ export default function Home() {
 				},
 				jottit: {
 					value: false,
-					desc: 'Jot notes down easily and that are synced.',
+					desc: 'Jot notes down easily that are automatically synced.',
 					type:"toggle"
 				},
 				theme: {
@@ -247,7 +273,7 @@ export default function Home() {
 							])
 
 							localStorage.setItem("todo", JSON.stringify(todo));
-							saveTodo();
+							saveStorageItems();
 						}
 					},
 					{
@@ -262,6 +288,9 @@ export default function Home() {
 			}
 		}
 	);
+
+	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : []);
+	const [ jottit, setJottit ] = useState(documentSettings?.storage?.jottit);
 
 	if(!process.browser) return <></>;
 	
@@ -368,8 +397,9 @@ export default function Home() {
 
 	useEffect(() => {
 		localStorage.setItem("todo", JSON.stringify(todo));
-		saveTodo();
-	}, [todo])
+		localStorage.setItem("jottit", JSON.stringify(jottit));
+		saveStorageItems();
+	}, [todo, jottit])
 
 	useEffect(() => {
 		console.log('[THEME]:\t Loading Theme', documentSettings.settings.theme);
@@ -441,7 +471,7 @@ export default function Home() {
 		{}
 
 	return (
-		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, saveSettings, userData, setUserData, todo, setTodo, saveTodo, backgroundStats }}>
+		<DocumentContext.Provider value={{ documentSettings, setDocumentSettings, saveSettings, userData, setUserData, todo, jottit, setJottit, setTodo, saveStorageItems, backgroundStats }}>
 			<div className={styles.container} style={
 				documentSettings.settings.backgroundType.value == "chaos" ?
 				{

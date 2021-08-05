@@ -4,45 +4,86 @@ import styles from '@styles/Home.module.css'
 import { DocumentContext } from '@public/@types/document_context';
 
 const Jottit: React.FC<{}> = () =>  {
-    const { documentSettings, setDocumentSettings } = useContext(DocumentContext);
-    const color = "rgb(var(--clock-color))";
-    const [ date, setDate ] = useState(new Date());
+    const { documentSettings, setDocumentSettings, jottit, setJottit, saveStorageItems } = useContext(DocumentContext);
+    const [ activeJott, setActiveJott ] = useState(jottit[documentSettings.states.activeJott]);
+
+    useEffect(() => {
+        localStorage.setItem("jottit", JSON.stringify(jottit));
+        saveStorageItems();
+    }, [activeJott])
 
     return (
         <>
         {
-            documentSettings.settings.jottit ?
+            documentSettings.settings.jottit.value ?
             <div>
-                    <div className={styles.todoHeader}>
-                        {
-                            documentSettings.states.editingTitle ?
-                            <input type="text" placeholder={documentSettings.settings.title.value} 
-                            onChange={(e) => setDocumentSettings({...documentSettings, settings: { ...documentSettings.settings, title: { ...documentSettings.settings.title, value: e.target.value } }})} 
-                            onKeyDown={(e) => {
-                                if(e.key == "Enter") setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingJottTitle: false } })
-                            }} autoFocus/>
-                            :
-                            <h2 onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingJottTitle: true } })}>{documentSettings.settings.title.value}</h2>
-                        }
-                    
+                    <div className={styles.jottHeader}>
+                        <div className={styles.jottList}>
+                            {
+                                jottit.map((jot, index) => {
+                                    if(index == documentSettings.states.activeJott) {
+                                        return (
+                                            <div className={styles.activeJott}>
+                                                {
+                                                    documentSettings.states.editingJottTitle ?
+                                                    <input type="text" placeholder={jot.title} 
+                                                    onChange={(event) => 
+                                                        setJottit(jottit.map((e, i) => {
+                                                            if(i == index) {
+                                                                return { ...e, title: event.target.value };
+                                                            }else {
+                                                                return e;
+                                                            }
+                                                        }))
+                                                    } 
+                                                    onKeyDown={(e) => {
+                                                        if(e.key == "Enter") setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingJottTitle: false } })
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingJottTitle: false } })
+                                                    }} autoFocus/>
+                                                    :
+                                                    <h2 onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingJottTitle: true } })}>{jot.title}</h2>
+                                                }
+                                            </div>
+                                        )
+                                    }else {
+                                        return (
+                                            <div 
+                                                className={styles.innactiveJott} 
+                                                onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, activeJott: index } })}
+                                            >
+                                                <h2 >{jot.title}</h2>
+                                            </div>
+                                        )
+                                    }  
+                                })
+                            }
+                        </div>
+                        
                         <Plus color={"rgb(var(--primary-color))"} size={20} strokeWidth={1.5} onClick={() => {
-                            // setTodo([
-                            //     ...todo,
-                            //     {
-                            //         editable: true,
-                            //         title: '',
-                            //         completed: false
-                            //     }
-                            // ])
+                            setJottit([
+                                ...jottit,
+                                {
+                                    title: 'My Jot',
+                                    content: 'Begin Typing here'
+                                }
+                            ])
 
-                            // localStorage.setItem("todo", JSON.stringify(todo));
-                            // saveTodo();
+                            localStorage.setItem("jottit", JSON.stringify(jottit));
+                            saveStorageItems();
                         }}/>
                     </div>
-                    <div className={styles.todoBody}>	
-                        <textarea>
-
-                        </textarea>
+                    <div className={styles.jottBody}>	
+                        <div 
+                            contentEditable 
+                            defaultValue={activeJott.content}
+                            onChange={(e) => setActiveJott({ ...activeJott, content: e.target.value  })}
+                            >
+                            {
+                                activeJott.content
+                            }
+                        </div>
                     </div>
                 </div> 
             :

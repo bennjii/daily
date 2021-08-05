@@ -7,8 +7,14 @@ export type Document = {
         searchOpen: boolean,
         
         assignedPowerbinds: boolean,
-        onSearchCompletion: Binding
+        onSearchCompletion: Binding,
+
+        activeJott: number
     },
+    storage: {
+        todo: TodoItem[],
+        jottit: JottitPage[]
+    }
     settings: {
         title: Prefrence & {value: string},
         jottit: Prefrence & {value: boolean}
@@ -48,15 +54,19 @@ export type Binding = {
 
 export type DocumentContextType = {
     documentSettings: Document,
-    setDocumentSettings: Function,
+    setDocumentSettings: (doc: Document) => void,
+
     saveSettings: Function,
+    saveStorageItems: Function,
 
     userData: User,
     setUserData: Function,
 
     todo: TodoItem[],
+    jottit: JottitPage[],
+
     setTodo: Function,
-    saveTodo: Function,
+    setJottit: Function,
 
     backgroundStats: any
 }
@@ -65,6 +75,11 @@ export type TodoItem = {
     completed: boolean
     editable: boolean, 
     title: string,
+}
+
+export type JottitPage = {
+    title: string,
+    content: string
 }
 
 export type DocumentFeaturesContextType = {
