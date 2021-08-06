@@ -76,19 +76,19 @@ export default function Home() {
 			}
 		});
 
-		supabase
-			.from('users')
-			.update({
-				todo: todo,
-				last_changed: new Date()
-			})
-			.match({
-				id: supabase.auth.user()?.id
-			})
-			.then(e => {
-				console.log("[AUTO-SAVE]: Saved Todo", e)
-				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
-			})
+		// supabase
+		// 	.from('users')
+		// 	.update({
+		// 		todo: todo,
+		// 		last_changed: new Date()
+		// 	})
+		// 	.match({
+		// 		id: supabase.auth.user()?.id
+		// 	})
+		// 	.then(e => {
+		// 		console.log("[AUTO-SAVE]: Saved Todo", e)
+		// 		if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+		// 	})
 	}
 
 	const seekChanges = () => {
@@ -106,7 +106,7 @@ export default function Home() {
 						// Time has passed (out of date, please update)
 						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
 
-						setTodo(e.data[0].todo ? e.data[0].todo : []);
+						setTodo(e.data[0].settings.storage.todo);
 						
 						setDocumentSettings({
 							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
@@ -126,7 +126,7 @@ export default function Home() {
 							}
 						});
 
-						localStorage.setItem("todo", JSON.stringify(e.data[0].todo ? e.data[0].todo : []));
+						localStorage.setItem("todo", JSON.stringify(e.data[0].settings.todo ? e.data[0].settings.todo : []));
 					}else {
 						console.log("[SEEK]:\t\t UP TO DATE")
 						// On the latest version, probably should reciprocate information to the server if not matching...
@@ -289,7 +289,7 @@ export default function Home() {
 		}
 	);
 
-	const [ todo, setTodo ] = useState((process.browser) && localStorage.getItem("todo") ? JSON.parse(localStorage.getItem("todo")) : []);
+	const [ todo, setTodo ] = useState(documentSettings?.storage?.todo);
 	const [ jottit, setJottit ] = useState(documentSettings?.storage?.jottit);
 
 	if(!process.browser) return <></>;
