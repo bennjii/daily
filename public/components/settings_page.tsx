@@ -14,7 +14,6 @@ export default function SettingsPage() {
     const { documentSettings, setDocumentSettings, userData } = useContext(DocumentContext);
 
     return (
-        
         <div>
             <div className={styles.settingsToggle}>
                 <div></div>

@@ -5,7 +5,7 @@ import { DocumentContext } from '@public/@types/document_context';
 
 const Jottit: React.FC<{}> = () =>  {
     const { documentSettings, setDocumentSettings, jottit, setJottit, saveStorageItems } = useContext(DocumentContext);
-    const [ activeJott, setActiveJott ] = useState(jottit[documentSettings.states.activeJott]);
+    const [ activeJott, setActiveJott ] = useState(jottit?.[documentSettings.states.activeJott]);
 
     useEffect(() => {
         localStorage.setItem("jottit", JSON.stringify(jottit));

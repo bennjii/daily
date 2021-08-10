@@ -36,6 +36,13 @@ import Todo from '@components/todo_component'
 import Credit from '@components/credit'
 import Jottit from '@components/jottit'
 
+const fetcher = (url, token) =>
+  fetch(url, {
+    method: 'GET',
+    headers: new Headers({ 'Content-Type': 'application/json', token }),
+    credentials: 'same-origin',
+  }).then((res) => res.json())
+
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
 
 export default function Home() {
@@ -62,19 +69,32 @@ export default function Home() {
 			})
 			.then(e => {
 				console.log("[AUTO-SAVE]: Saved Settings", e)
-				if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+				if(e.data) {
+					localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
+					localStorage.setItem("settings", JSON.stringify({
+						...documentSettings,
+						storage: {
+							...documentSettings.storage,
+							todo: todo,
+							jottit: jottit
+						}
+					}, (k,v) => typeof v === "function" ? "" + v : v));
+				}
 			})
 	}
 
 	const saveStorageItems = () => {
-		setDocumentSettings({
+		console.log("[AUTO-SAVE]: Saved Storage Items", {
 			...documentSettings,
 			storage: {
 				...documentSettings.storage,
 				todo: todo,
 				jottit: jottit
 			}
-		});
+		})
+
+		if(supabase.auth.user())
+			saveSettings();
 
 		// supabase
 		// 	.from('users')
@@ -106,7 +126,8 @@ export default function Home() {
 						// Time has passed (out of date, please update)
 						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
 
-						setTodo(e.data[0].settings.storage.todo);
+						setTodo(e.data[0].settings.storage?.todo);
+						setJottit(e.data[0].settings.storage?.jottit);
 						
 						setDocumentSettings({
 							...JSON.parse(e.data[0].settings, (k,v) => typeof v === "string" ? (v.startsWith('function') ? eval("(" + v + ")") : v): v ), // eval("("+v+")")
@@ -289,8 +310,7 @@ export default function Home() {
 		}
 	);
 
-	const [ todo, setTodo ] = useState(documentSettings?.storage?.todo);
-	const [ jottit, setJottit ] = useState(documentSettings?.storage?.jottit);
+	
 
 	if(!process.browser) return <></>;
 	
@@ -308,6 +328,39 @@ export default function Home() {
 					})
 		});
 	}, [])
+
+	const session = supabase.auth.session()
+	const [ user, setUser ] = useState(supabase.auth.user());
+
+	const [ todo, setTodo ] = useState(documentSettings.storage?.todo);
+	const [ jottit, setJottit ] = useState(documentSettings.storage?.jottit);
+
+	useEffect(() => {
+		if(session)
+			fetcher('/api/getUser', session.access_token).then(e => {
+				setUser(e);
+			});
+		
+		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+			setUser(supabase.auth.user());
+			console.log(supabase.auth.user());			
+		});
+
+		if(user && documentSettings.settings.firstTime.value) {
+			console.log(`USR: ${user ? true : false} FT: ${documentSettings.settings.firstTime.value}`);
+
+			setDocumentSettings({
+				...documentSettings,
+				settings: {
+					...documentSettings.settings,
+					firstTime: {
+						...documentSettings.settings.firstTime,
+						value: false
+					}
+				}
+			})
+		}	
+	}, []);
 
 	useEffect(() => {
 		if(!process.browser) return;
@@ -393,7 +446,7 @@ export default function Home() {
 
 		if(supabase.auth.user()?.aud == 'authenticated')
 			saveSettings()
-	}, [documentSettings.settings, documentSettings.powertools]);
+	}, [documentSettings.settings, documentSettings.powertools, documentSettings.storage]);
 
 	useEffect(() => {
 		localStorage.setItem("todo", JSON.stringify(todo));
