@@ -78,7 +78,8 @@ const Jottit: React.FC<{}> = () =>  {
                         <div 
                             contentEditable 
                             defaultValue={activeJott.content}
-                            onChange={(e) => setActiveJott({ ...activeJott, content: e.target.value  })}
+                            onChange={(e) => //@ts-expect-error
+                                    setActiveJott({ ...activeJott, content: e.target.value  })}
                             >
                             {
                                 activeJott.content

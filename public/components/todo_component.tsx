@@ -15,11 +15,16 @@ const Todo: React.FC<{}> = () =>  {
                     <div className={styles.todoHeader}>
                         {
                             documentSettings.states.editingTitle ?
-                            <input type="text" placeholder={documentSettings.settings.title.value} 
-                            onChange={(e) => setDocumentSettings({...documentSettings, settings: { ...documentSettings.settings, title: { ...documentSettings.settings.title, value: e.target.value } }})} 
-                            onKeyDown={(e) => {
-                                if(e.key == "Enter") setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: false } })
-                            }} autoFocus/>
+                            <input 
+                                type="text" 
+                                placeholder={documentSettings.settings.title.value} 
+                                onChange={(e) => setDocumentSettings({...documentSettings, settings: { ...documentSettings.settings, title: { ...documentSettings.settings.title, value: e.target.value } }})} 
+                                onKeyDown={(e) => {
+                                    if(e.key == "Enter") setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: false } })
+                                }} 
+                                onBlur={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: false } })}
+                                autoFocus
+                            />
                             :
                             <h2 onClick={() => setDocumentSettings({...documentSettings, states: { ...documentSettings.states, editingTitle: true } })}>{documentSettings.settings.title.value}</h2>
                         }
