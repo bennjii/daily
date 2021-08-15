@@ -35,6 +35,7 @@ import PowerTools from '@components/powertools_component'
 import Todo from '@components/todo_component'
 import Credit from '@components/credit'
 import Jottit from '@components/jottit'
+import Body from '@components/body'
 
 const fetcher = (url, token) =>
   fetch(url, {
@@ -44,6 +45,7 @@ const fetcher = (url, token) =>
   }).then((res) => res.json())
 
 const unSPLASH = createApi({ accessKey: "XYUczbGx7fY_eoE1Dwt1KpM04hIRtwTv8lLaiSkN8p4" });
+
 
 export default function Home() {
 	const [ userData, setUserData ] = useState<User>(null);
@@ -320,7 +322,7 @@ export default function Home() {
 	const [ user, setUser ] = useState(supabase.auth.user());
 
 	//@ts-expect-error
-	if(user.error && !documentSettings.settings.firstTime.value) {
+	if(user?.error && !documentSettings.settings.firstTime.value) {
 		console.log(session.user.id);
 		setDocumentSettings({
 			...documentSettings,
@@ -555,22 +557,31 @@ export default function Home() {
 					</div>
 				}
 
-				<div className={styles.leftSide}>
-					<div>
-						{ (documentSettings.settings.showAds.value) && <div> <h3>AD</h3> </div> }
-						{ (documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay /> }
+				<div style={{ padding: '3rem' }}>
+					<Body />
+				</div>
+				
+					
+				<PowerTools />
+
+			
+					{/* <div className={styles.leftSide}>
+						<div>
+							{ (documentSettings.settings.showAds.value) && <div> <h3>AD</h3> </div> }
+							{ (documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay /> }
+						</div>
+
+						<Clock />
 					</div>
 
-					<Clock />
-				</div>
+					<PowerTools />
+					
+					<div className={styles.rightSide}>
+						<Todo />
+						<Jottit />
+					</div>
+			 */}
 
-				<PowerTools />
-				
-				<div className={styles.rightSide}>
-					<Todo />
-					<Jottit />
-				</div>
-			
 				{
 					documentSettings.states.settingsOpen ?
 					<div className={styles.settingsOverlay} id={"settingsBackground"}>

@@ -18,7 +18,7 @@ export default function Clock() {
 	}, []);
 
     return (
-        <div className={styles.time}>
+        <div className={`${styles.time} .grid-item__title`}>
             <h1 style={{ color:  color }}>
                 {
                     (documentSettings.settings.hour24.value) ?

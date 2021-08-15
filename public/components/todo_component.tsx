@@ -11,8 +11,8 @@ const Todo: React.FC<{}> = () =>  {
         <>
             {
                 (process.browser && documentSettings.settings.showToDo.value) ?
-                <div>
-                    <div className={styles.todoHeader}>
+                <div style={{ display: 'flex', flexDirection: "column", flex: 1, height: '100%' }}>
+                    <div className={`${styles.todoHeader} .grid-item__title`}>
                         {
                             documentSettings.states.editingTitle ?
                             <input 

@@ -1,8 +1,7 @@
 import { DocumentContextType } from '@public/@types/document';
 import { DocumentContext } from '@public/@types/document_context'
 import { supabase } from '@root/client';
-import { truncate } from 'node:fs';
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { Box, Check, Code, Square } from 'react-feather'
 import styles from '../../styles/Home.module.css'
 
@@ -12,13 +11,17 @@ export default function Accounts(props) {
 
     const [ userData, setUserData ] = useState(null);
 
-    supabase
-        .from('users')
-        .select('*')
-        .eq('id', supabase.auth.session().user.id)
-        .then(usr => {
-            setUserData(usr.data[0]);
-        });
+    useEffect(() => {
+        if(supabase.auth.session())
+            supabase
+                .from('users')
+                .select('*')
+                .eq('id', supabase.auth.session()?.user.id)
+                .then(usr => {
+                    setUserData(usr.data[0]);
+                });
+    })
+    
 
 
     return (
