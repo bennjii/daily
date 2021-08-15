@@ -10,8 +10,16 @@ export default function Accounts(props) {
     const documentSettings = props.settings;
     const callback = props.callback;
 
-    const userData = props.user;
-    
+    const [ userData, setUserData ] = useState(null);
+
+    supabase
+        .from('users')
+        .select('*')
+        .eq('id', supabase.auth.session().user.id)
+        .then(usr => {
+            setUserData(usr.data[0]);
+        });
+
 
     return (
         <div style={{ position: 'relative' }}>

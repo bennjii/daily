@@ -58,7 +58,7 @@ export default function Home() {
 					...documentSettings,
 					storage: {
 						...documentSettings.storage,
-						todo: todo,
+						todo: todo ? todo : [],
 						jottit: jottit
 					}
 				}, (k,v) => typeof v === "function" ? "" + v : v),
@@ -75,7 +75,7 @@ export default function Home() {
 						...documentSettings,
 						storage: {
 							...documentSettings.storage,
-							todo: todo,
+							todo: todo ? todo : [],
 							jottit: jottit
 						}
 					}, (k,v) => typeof v === "function" ? "" + v : v));
@@ -84,31 +84,18 @@ export default function Home() {
 	}
 
 	const saveStorageItems = () => {
-		console.log("[AUTO-SAVE]: Saved Storage Items", {
-			...documentSettings,
-			storage: {
-				...documentSettings.storage,
-				todo: todo,
-				jottit: jottit
-			}
-		})
-
-		if(supabase.auth.user())
+		if(supabase.auth.user()) {
+			console.log("[AUTO-SAVE]: Saved Storage Items", {
+				...documentSettings,
+				storage: {
+					...documentSettings.storage,
+					todo: todo ? todo : [],
+					jottit: jottit
+				}
+			});
+			
 			saveSettings();
-
-		// supabase
-		// 	.from('users')
-		// 	.update({
-		// 		todo: todo,
-		// 		last_changed: new Date()
-		// 	})
-		// 	.match({
-		// 		id: supabase.auth.user()?.id
-		// 	})
-		// 	.then(e => {
-		// 		console.log("[AUTO-SAVE]: Saved Todo", e)
-		// 		if(e.data) localStorage.setItem("last-changed", JSON.stringify(e.data[0].last_changed));
-		// 	})
+		}
 	}
 
 	const seekChanges = () => {
@@ -126,7 +113,7 @@ export default function Home() {
 						// Time has passed (out of date, please update)
 						console.log("[SEEK]:\t\t OUT OF DATE ~ UPDATING INFORMATION...");
 
-						setTodo(e.data[0].settings.storage?.todo);
+						setTodo(e.data[0].settings.storage?.todo ? e.data[0].settings.storage?.todo : []);
 						setJottit(e.data[0].settings.storage?.jottit);
 						
 						setDocumentSettings({
@@ -325,14 +312,29 @@ export default function Home() {
 					.then(usr => {
 						setUserData(usr.data[0]);
 						seekChanges();
-					})
+					});
 		});
 	}, [])
 
 	const session = supabase.auth.session()
 	const [ user, setUser ] = useState(supabase.auth.user());
 
-	const [ todo, setTodo ] = useState(documentSettings.storage?.todo);
+	//@ts-expect-error
+	if(user.error && !documentSettings.settings.firstTime.value) {
+		console.log(session.user.id);
+		setDocumentSettings({
+			...documentSettings,
+			settings: {
+				...documentSettings.settings,
+				firstTime: {
+					...documentSettings.settings.firstTime,
+					value: true
+				}
+			}
+		});
+	}
+
+	const [ todo, setTodo ] = useState(documentSettings.storage?.todo ? documentSettings.storage?.todo : []);
 	const [ jottit, setJottit ] = useState(documentSettings.storage?.jottit);
 
 	useEffect(() => {
@@ -449,6 +451,7 @@ export default function Home() {
 	}, [documentSettings.settings, documentSettings.powertools, documentSettings.storage]);
 
 	useEffect(() => {
+		console.log("[SET]:\tInitialising Storage")
 		localStorage.setItem("todo", JSON.stringify(todo));
 		localStorage.setItem("jottit", JSON.stringify(jottit));
 		saveStorageItems();
