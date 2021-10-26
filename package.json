@@ -17,7 +17,7 @@
     "@types/react": "^17.0.3",
     "axios": "^0.21.2",
     "keyboardist": "^2.0.2",
-    "next": "^11.1.0",
+    "next": "^11.1.1",
     "react": "17.0.2",
     "react-colorful": "^5.3.0",
     "react-dom": "17.0.2",
