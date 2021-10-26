@@ -15,7 +15,7 @@
     "@supabase/ui": "^0.29.2",
     "@types/node": "^14.14.37",
     "@types/react": "^17.0.3",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "keyboardist": "^2.0.2",
     "next": "^11.1.0",
     "react": "17.0.2",
