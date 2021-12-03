@@ -563,8 +563,18 @@ export default function Home() {
 					</div>
 				}
 
-				<div style={{ padding: '3rem' }}>
-					<Body />
+				<div className={styles.leftSide}>
+					<div>
+						{ (documentSettings.settings.showAds.value) && <div> <h3>AD</h3> </div> }
+						{ (documentSettings.settings.quoteOfTheDay.value) && <QuoteOfTheDay /> }
+					</div>
+
+					<Clock />
+				</div>
+				
+				<div className={styles.rightSide}>
+					<Todo />
+					<Jottit />
 				</div>
 				
 					

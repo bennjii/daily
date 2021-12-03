@@ -3,11 +3,8 @@ import styles from '@styles/Home.module.css'
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-import RGL, { Responsive, WidthProvider } from 'react-grid-layout'
 import Clock from './clock';
 import Todo from './todo_component';
-
-const GridLayout = WidthProvider(RGL);
 
 const Body = () => {
     const [ layout, setLayout ] = useState([
@@ -16,19 +13,16 @@ const Body = () => {
     ])
 
     return (
-        <GridLayout 
-            className={styles.gridLayout}
-            cols={6}
-            onLayoutChange={setLayout}
-            layout={layout}
-            width={window.innerWidth}
-            isDraggable
-            isRearrangeable
-            isResizable
-            >
-            <div key="clock" className={".grid-item__title"} ><Clock /></div>
-            <div key="todo" className={".grid-item__title"} ><Todo /></div>
-        </GridLayout>
+        <div>
+            <div className={styles.leftSide}>
+                <div key="clock" className={".grid-item__title"} ><Clock /></div>
+            </div>
+
+            <div className={styles.rightSide}>
+                <div key="todo" className={".grid-item__title"} ><Todo /></div>
+
+            </div>
+        </div>
     )
 }
 
