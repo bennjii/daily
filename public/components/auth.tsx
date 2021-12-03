@@ -18,7 +18,7 @@ export default function Auth(props) {
             console.log('[USER]:\tUpdating States')
             if(session.user) {
                 if(session.user.aud == 'authenticated') {
-                    callback('features')
+                    callback('features');
                 }
             }
         });

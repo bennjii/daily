@@ -297,8 +297,6 @@ export default function Home() {
 		}
 	);
 
-	
-
 	if(!process.browser) return <></>;
 	
 	useEffect(() => {
@@ -320,7 +318,7 @@ export default function Home() {
 	const [ user, setUser ] = useState(supabase.auth.user());
 
 	//@ts-expect-error
-	if(user.error && !documentSettings.settings.firstTime.value) {
+	if(user?.error && !documentSettings.settings.firstTime.value) {
 		console.log(session.user.id);
 		setDocumentSettings({
 			...documentSettings,
@@ -345,6 +343,14 @@ export default function Home() {
 		
 		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
 			setUser(supabase.auth.user());
+
+			fetch('/api/auth', {
+				method: 'POST',
+				headers: new Headers({ 'Content-Type': 'application/json' }),
+				credentials: 'same-origin',
+				body: JSON.stringify({ event, session }),
+			});
+			
 			console.log(supabase.auth.user());			
 		});
 

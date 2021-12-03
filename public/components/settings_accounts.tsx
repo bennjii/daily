@@ -15,7 +15,7 @@ export default function Accounts(props) {
     supabase
         .from('users')
         .select('*')
-        .eq('id', supabase.auth.session().user.id)
+        .eq('id', supabase?.auth?.session()?.user?.id)
         .then(usr => {
             setUserData(usr.data[0]);
         });
