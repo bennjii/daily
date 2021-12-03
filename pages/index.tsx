@@ -299,8 +299,6 @@ export default function Home() {
 		}
 	);
 
-	
-
 	if(!process.browser) return <></>;
 	
 	useEffect(() => {
@@ -347,6 +345,14 @@ export default function Home() {
 		
 		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
 			setUser(supabase.auth.user());
+
+			fetch('/api/auth', {
+				method: 'POST',
+				headers: new Headers({ 'Content-Type': 'application/json' }),
+				credentials: 'same-origin',
+				body: JSON.stringify({ event, session }),
+			});
+			
 			console.log(supabase.auth.user());			
 		});
 
