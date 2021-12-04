@@ -339,14 +339,14 @@ export default function Home() {
 
 	useEffect(() => {
 		if(session)
-			fetcher('/api/getUser', session.access_token).then(e => {
+			fetcher('https://daily-eosin.vercel.app/api/getUser', session.access_token).then(e => {
 				setUser(e);
 			});
 		
 		const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
 			setUser(supabase.auth.user());
 
-			fetch('/api/auth', {
+			fetch('https://daily-eosin.vercel.app/api/auth', {
 				method: 'POST',
 				headers: new Headers({ 'Content-Type': 'application/json' }),
 				credentials: 'same-origin',
